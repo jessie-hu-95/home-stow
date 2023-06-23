@@ -14,7 +14,9 @@ This may be inconvenient in some setups, so Emacs has mechanisms for changing th
     (expand-file-name "aux" user-emacs-directory))
 #+end_src
 
-Save backup files to ~aux/backup~ directory.
+*** Backup files
+
+Save backup files to ~aux/backup~.
 
 #+begin_src emacs-lisp
   (defconst backup-directory
@@ -27,7 +29,9 @@ Save backup files to ~aux/backup~ directory.
   (setq version-control t)
 #+end_src
 
-Save auto-save files to ~aux/auto-save~ directory.
+*** Auto-save files
+
+Save auto-save files to ~aux/auto-save~.
 
 #+begin_src emacs-lisp
   (defconst auto-save-directory
@@ -39,7 +43,9 @@ Save auto-save files to ~aux/auto-save~ directory.
   (setq auto-save-interval 32)
 #+end_src
 
-Save lock files to ~aux/lock~ directory.
+*** Lock files
+
+Save lock files to ~aux/lock~.
 
 #+begin_src emacs-lisp
   (defconst lock-directory
@@ -65,4 +71,96 @@ Let Emacs prompts about unsaved customizations at termination time.
 #+begin_src emacs-lisp
   (add-hook 'kill-emacs-query-functions
 	    'custom-prompt-customize-unsaved-options)
+#+end_src
+
+** Improving appearance
+
+Disable scroll bar and tool bar.
+
+#+begin_src emacs-lisp
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1)
+#+end_src
+
+Enable visual line, line number display and highlight current line.
+
+#+begin_src emacs-lisp
+  (global-display-line-numbers-mode)
+  (global-visual-line-mode)
+  (global-hl-line-mode)
+#+end_src
+
+** Better scrolling behavior
+
+Keep point away from the margin at the top and bottom of a window.
+
+#+begin_src emacs-lisp
+  (setq scroll-margin 32)
+#+end_src
+
+When using ~C-v~ and ~M-v~ to scroll up and down, the point jumps to
+the center of a window. To disable this feature,
+
+#+begin_src emacs-lisp
+  (setq scroll-preserve-screen-position t)
+#+end_src
+
+If point moves off-screen, redisplay will scroll by up to
+~scroll-conservatively~ lines in order to bring point just barely
+onto the screen again. If the value is greater than 100, redisplay
+will never recenter point, but will always scroll just enough text
+to bring point into view, even if you move far away.
+
+#+begin_src emacs-lisp
+  (setq scroll-conservatively 101)
+#+end_src
+
+** Easing editing experience
+
+Remember recent visited files.
+
+#+begin_src emacs-lisp
+  (require 'recentf)
+  (recentf-mode)
+  (setq recentf-max-menu-items 64)
+  (setq recentf-max-saved-items 256)
+  (global-set-key (kbd "C-x C-r") 'recentf-open-files)
+#+end_src
+
+By default, ~recentf~ saves the list of recent files on exiting Emacs.
+If Emacs exits abruptly for some reason the recent file list will be lost.
+To call `recentf-save-list` periodically, e.g. every minutes:
+
+#+begin_src emacs-lisp
+  (run-at-time nil 60 'recentf-save-list)
+#+end_src
+
+Remember point position for each buffer.
+
+#+begin_src emacs-lisp
+  (require 'saveplace)
+  (save-place-mode)
+  (setq save-place-limit 1024)
+  (setq save-place-version-control 'nospecial)
+#+end_src
+
+Update buffer contents automatically.
+
+#+begin_src emacs-lisp
+  (global-auto-revert-mode)
+  (setq auto-revert-interval 1)
+#+end_src
+
+Enlarge kill ring size.
+
+#+begin_src emacs-lisp
+  (setq kill-ring-max 512)
+#+end_src
+
+Let ~M-F~ and ~M-B~ behave like Vim's ~w~ and ~b~ keys in normal mode.
+
+#+begin_src emacs-lisp
+  (require 'misc)
+  (global-set-key (kbd "M-F") 'forward-to-word)
+  (global-set-key (kbd "M-B") 'backward-to-word)
 #+end_src
