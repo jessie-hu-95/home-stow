@@ -3,3 +3,66 @@
 #+EMAIL: jessie.hu.95@icloud.com
 
 * Configuration for vinilla GNU Emacs
+
+** Making Emacs write all auxiliary files somewhere else
+
+By default, Emacs may create many new files in the directory where file is edited.
+This may be inconvenient in some setups, so Emacs has mechanisms for changing the locations of all these files.
+
+#+begin_src emacs-lisp
+  (defconst aux-directory
+    (expand-file-name "aux" user-emacs-directory))
+#+end_src
+
+Save backup files to ~aux/backup~ directory.
+
+#+begin_src emacs-lisp
+  (defconst backup-directory
+    (expand-file-name "backup" aux-directory))
+  (setq backup-directory-alist `((".*" . ,backup-directory)))
+  (setq backup-by-copying t)
+  (setq delete-old-versions t)
+  (setq kept-new-versions 64)
+  (setq kept-old-versions 32)
+  (setq version-control t)
+#+end_src
+
+Save auto-save files to ~aux/auto-save~ directory.
+
+#+begin_src emacs-lisp
+  (defconst auto-save-directory
+    (expand-file-name "auto-save" aux-directory))
+  (make-directory auto-save-directory t)
+  (setq auto-save-file-name-transforms
+	`(("\\`/.*/\\([^/]+\\)\\'"
+	   ,(concat auto-save-directory "/\\1") t)))
+  (setq auto-save-interval 32)
+#+end_src
+
+Save lock files to ~aux/lock~ directory.
+
+#+begin_src emacs-lisp
+  (defconst lock-directory
+    (expand-file-name "lock" aux-directory))
+  (setq lock-file-name-transforms
+	`(("\\`/.*/\\([^/]+\\)\\'"
+	   ,(concat lock-directory "/\\1") t)))
+#+end_src
+
+** Saving Customizations besides init file
+
+Save customization file to ~custom.el~ in ~user-emacs-directory~.
+Suppress error reporting if this file doesn’t exist by a non-nil second arg ~t~.
+
+#+begin_src emacs-lisp
+  (defconst custom-file
+    (expand-file-name "custom.el" user-emacs-directory))
+  (load custom-file t)
+#+end_src
+
+Let Emacs prompts about unsaved customizations at termination time.
+
+#+begin_src emacs-lisp
+  (add-hook 'kill-emacs-query-functions
+	    'custom-prompt-customize-unsaved-options)
+#+end_src
