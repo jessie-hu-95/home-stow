@@ -73,6 +73,24 @@ Let Emacs prompts about unsaved customizations at termination time.
 	    'custom-prompt-customize-unsaved-options)
 #+end_src
 
+** Config modifier keys
+
+For macOS, prevent passing command and control keys to system Toolbox.
+
+#+begin_src emacs-lisp
+  (when (eq system-type 'darwin)
+    (setq mac-pass-command-to-system nil)
+    (setq mac-pass-control-to-system nil))
+#+end_src
+
+Use left and right command key as ~super~ and ~meta~ keys respectively.
+
+#+begin_src emacs-lisp
+  (when (eq system-type 'darwin)
+    (setq mac-command-modifier 'super)
+    (setq mac-right-command-modifier 'meta))
+#+end_src
+
 ** Improving appearance
 
 Disable scroll bar and tool bar.
