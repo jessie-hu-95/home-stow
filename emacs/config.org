@@ -1,0 +1,5 @@
+#+TITLE: Jessie's GNU Emacs Configuration
+#+AUTHOR: Jessie Hu
+#+EMAIL: jessie.hu.95@icloud.com
+
+* Configuration for vinilla GNU Emacs
