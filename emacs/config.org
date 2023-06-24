@@ -1,13 +1,14 @@
-#+TITLE: Jessie's GNU Emacs Configuration
+#+TITLE: Jessie's Emacs Configuration
 #+AUTHOR: Jessie Hu
 #+EMAIL: jessie.hu.95@icloud.com
 
-* Configuration for vinilla GNU Emacs
+* Configuration for vinilla Emacs
 
 ** Making Emacs write all auxiliary files somewhere else
 
-By default, Emacs may create many new files in the directory where file is edited.
-This may be inconvenient in some setups, so Emacs has mechanisms for changing the locations of all these files.
+By default, Emacs may create many new files in the directory where
+file is edited. This may be inconvenient in some setups, so Emacs has
+mechanisms for changing the locations of all these files.
 
 #+begin_src emacs-lisp
   (defconst aux-directory
@@ -57,8 +58,9 @@ Save lock files to ~aux/lock~.
 
 ** Saving Customizations besides init file
 
-Save customization file to ~custom.el~ in ~user-emacs-directory~.
-Suppress error reporting if this file doesn’t exist by a non-nil second arg ~t~.
+Save customization file to ~custom.el~ in
+~user-emacs-directory~. Suppress error reporting if this file doesn’t
+exist by a non-nil second arg ~t~.
 
 #+begin_src emacs-lisp
   (defconst custom-file
@@ -83,7 +85,8 @@ For macOS, prevent passing command and control keys to system Toolbox.
     (setq mac-pass-control-to-system nil))
 #+end_src
 
-Use left and right command key as ~super~ and ~meta~ keys respectively.
+Use left and right command key as ~super~ and ~meta~ keys
+respectively.
 
 #+begin_src emacs-lisp
   (when (eq system-type 'darwin)
@@ -124,10 +127,10 @@ the center of a window. To disable this feature,
 #+end_src
 
 If point moves off-screen, redisplay will scroll by up to
-~scroll-conservatively~ lines in order to bring point just barely
-onto the screen again. If the value is greater than 100, redisplay
-will never recenter point, but will always scroll just enough text
-to bring point into view, even if you move far away.
+~scroll-conservatively~ lines in order to bring point just barely onto
+the screen again. If the value is greater than 100, redisplay will
+never recenter point, but will always scroll just enough text to bring
+point into view, even if you move far away.
 
 #+begin_src emacs-lisp
   (setq scroll-conservatively 101)
@@ -145,9 +148,10 @@ Remember recent visited files.
   (global-set-key (kbd "C-x C-r") 'recentf-open-files)
 #+end_src
 
-By default, ~recentf~ saves the list of recent files on exiting Emacs.
-If Emacs exits abruptly for some reason the recent file list will be lost.
-To call `recentf-save-list` periodically, e.g. every minutes:
+By default, ~recentf~ saves the list of recent files on exiting
+Emacs. If Emacs exits abruptly for some reason the recent file list
+will be lost. To call `recentf-save-list` periodically, e.g. every
+minutes:
 
 #+begin_src emacs-lisp
   (run-at-time nil 60 'recentf-save-list)
