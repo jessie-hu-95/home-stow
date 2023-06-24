@@ -313,6 +313,7 @@ Install =use-package= unless it exists.
   (unless (package-installed-p 'use-package)
     (package-refresh-contents)
     (package-install 'use-package))
+  (setq use-package-always-ensure t)
 #+end_src
 
 ** General configs for all text editing tasks
@@ -325,7 +326,6 @@ popup.
 
 #+begin_src emacs-lisp
   (use-package which-key
-    :ensure t
     :config (which-key-mode))
 #+end_src
 
@@ -337,7 +337,6 @@ retrieve and display completion candidates.
 
 #+begin_src emacs-lisp
   (use-package company
-    :ensure t
     :config (global-company-mode))
 #+end_src
 
@@ -348,7 +347,6 @@ shine on top of the point so we know where it is.
 
 #+begin_src emacs-lisp
   (use-package beacon
-    :ensure t
     :custom ((beacon-size 8)
 	     (beacon-blink-delay 0.1)
 	     (beacon-blink-duration 0.5))
@@ -362,7 +360,6 @@ does provide functions for =scroll-other-window=.
 
 #+begin_src emacs-lisp
   (use-package golden-ratio-scroll-screen
-    :ensure t
     :bind (([remap scroll-up-command]   . golden-ratio-scroll-screen-up)
 	   ([remap scroll-down-command] . golden-ratio-scroll-screen-down)))
 #+end_src
@@ -378,7 +375,6 @@ undo-tree files into =aux/undo-tree=.
   (defconst undo-tree-directory
     (expand-file-name "undo-tree" aux-directory))
   (use-package undo-tree
-    :ensure t
     :custom (undo-tree-history-directory-alist
 	     `((".*" . ,undo-tree-directory)))
     :config (global-undo-tree-mode))
@@ -390,7 +386,6 @@ undo-tree files into =aux/undo-tree=.
 
 #+begin_src emacs-lisp
   (use-package org-bullets
-    :ensure t
     :hook (org-mode . org-bullets-mode))
 #+end_src
 
