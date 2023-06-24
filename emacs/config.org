@@ -2,6 +2,39 @@
 #+AUTHOR: Jessie Hu
 #+EMAIL: jessie.hu.95@icloud.com
 
+* Contents
+:PROPERTIES:
+:TOC:      :include all :depth 3
+:END:
+:CONTENTS:
+- [[#contents][Contents]]
+- [[#configuration-for-vinilla-emacs][Configuration for vinilla Emacs]]
+  - [[#making-emacs-write-all-auxiliary-files-somewhere-else][Making Emacs write all auxiliary files somewhere else]]
+    - [[#backup-files][Backup files]]
+    - [[#auto-save-files][Auto-save files]]
+    - [[#lock-files][Lock files]]
+  - [[#saving-customizations-besides-init-file][Saving Customizations besides init file]]
+  - [[#config-modifier-keys][Config modifier keys]]
+  - [[#improving-appearance][Improving appearance]]
+  - [[#better-scrolling-behavior][Better scrolling behavior]]
+  - [[#easing-editing-experience][Easing editing experience]]
+  - [[#dired-the-directory-editor][Dired, the directory editor]]
+    - [[#use-external-ls-implementation][Use external ls implementation]]
+    - [[#reuse-directory-buffer][Reuse directory buffer]]
+- [[#enhance-editing-experience-with-third-party-packages][Enhance editing experience with third-party packages]]
+  - [[#prerequisites][Prerequisites]]
+    - [[#set-path-and-exec-path][Set $PATH and exec-path]]
+    - [[#bootstrap-the-use-package-macro][Bootstrap the use-package macro]]
+  - [[#general-configs-for-all-text-editing-tasks][General configs for all text editing tasks]]
+    - [[#hints-for-prefixed-key-bindings][Hints for prefixed key bindings]]
+    - [[#basic-completion-settings][Basic completion settings]]
+    - [[#never-lose-the-point-again][Never lose the point again]]
+    - [[#recording-undo-history][Recording undo history]]
+- [[#org-mode][Org mode]]
+  - [[#show-org-mode-bullets-as-utf-8-characters][Show org-mode bullets as UTF-8 characters]]
+  - [[#generate-table-of-contents][Generate table of contents]]
+:END:
+
 * Configuration for vinilla Emacs
 
 ** Making Emacs write all auxiliary files somewhere else
@@ -361,4 +394,20 @@ undo-tree files into ~aux/undo-tree~.
     :custom (undo-tree-history-directory-alist
 	     `((".*" . ,undo-tree-directory)))
     :config (global-undo-tree-mode))
+#+end_src
+
+* Org mode
+
+** Show ~org-mode~ bullets as UTF-8 characters
+
+#+begin_src emacs-lisp
+  (use-package org-bullets
+    :ensure t
+    :hook (org-mode . org-bullets-mode))
+#+end_src
+
+** Generate table of contents
+
+#+begin_src emacs-lisp
+  (use-package org-make-toc)
 #+end_src
