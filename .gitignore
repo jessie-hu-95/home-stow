@@ -1,8 +1,10 @@
 *.DS_Store
 emacs/auto-save-list
+emacs/eln-cache
 emacs/aux
 emacs/elpa
 emacs/recentf
 emacs/places
 emacs/config.el
+emacs/custom.el
 emacs/config.[!o][!r][!g]
