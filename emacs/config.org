@@ -98,7 +98,8 @@ Additionally, ~C-M-d~ is bound to systemwide searching. To disable it,
 run the following command from the shell.
 
 #+begin_src shell
-  defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 70 '<dict><key>enabled</key><false/></dict>'
+  defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys \
+	   -dict-add 70 '<dict><key>enabled</key><false/></dict>'
 #+end_src
 
 ** Improving appearance
@@ -238,4 +239,126 @@ directory. To kill the current directory (the child) when using ~^~,
 	    (lambda ()
 	      (define-key dired-mode-map (kbd "^")
 		(lambda () (interactive) (find-alternate-file "..")))))
+#+end_src
+
+* Enhance editing experience with third-party packages
+
+** Prerequisites
+
+*** Set ~$PATH~ and ~exec-path~
+
+Some packages need some build tools available in user's shell ~PATH~
+environment variable.  Set up Emacs' ~exec-path~ and ~PATH~
+environment variable to match that used by the user's shell. This is
+particularly useful under Mac OS X and macOS, where GUI apps are not
+started from a shell.
+
+#+begin_src emacs-lisp
+  (defun set-exec-path-from-shell-PATH ()
+    (interactive)
+    (let* ((login-path
+	    (shell-command-to-string "$SHELL --login -c 'echo $PATH'"))
+	   (path-from-shell
+	    (replace-regexp-in-string "[ \t\n]*$" "" login-path)))
+      (setenv "PATH" path-from-shell)
+      (setq exec-path (split-string path-from-shell path-separator))))
+#+end_src
+
+Invoke this function on macOS:
+
+#+begin_src emacs-lisp
+  (when (eq system-type 'darwin)
+    (set-exec-path-from-shell-PATH))
+#+end_src
+
+*** Bootstrap the ~use-package~ macro
+
+The ~use-package~ macro allows one to isolate package configuration in
+the init file in a way that is both performance-oriented and, well,
+tidy.
+
+First, add Melpa to ~package-archives~:
+
+#+begin_src emacs-lisp
+  (require 'package)
+  (add-to-list 'package-archives
+	       '("melpa" . "https://melpa.org/packages/"))
+  (package-initialize)
+#+end_src
+
+Install ~use-package~ unless it exists.
+
+#+begin_src emacs-lisp
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+#+end_src
+
+** General configs for all text editing tasks
+
+*** Hints for prefixed key bindings
+
+~which-key~ is a minor mode for Emacs that displays the key bindings
+following your currently entered incomplete command (a prefix) in a
+popup.
+
+#+begin_src emacs-lisp
+  (use-package which-key
+    :ensure t
+    :config (which-key-mode))
+#+end_src
+
+*** Basic completion settings
+
+Company is a text completion framework for Emacs. The name stands for
+"complete anything". It uses pluggable back-ends and front-ends to
+retrieve and display completion candidates.
+
+#+begin_src emacs-lisp
+  (use-package company
+    :ensure t
+    :config (global-company-mode))
+#+end_src
+
+*** Never lose the point again
+
+~beacon~ is a global minor-mode. Whenever the window scrolls a light will
+shine on top of the point so we know where it is.
+
+#+begin_src emacs-lisp
+  (use-package beacon
+    :ensure t
+    :custom ((beacon-size 8)
+	     (beacon-blink-delay 0.1)
+	     (beacon-blink-duration 0.5))
+    :config (beacon-mode)
+    )
+#+end_src
+
+Scroll screen down or up, and highlight current line before or after
+scrolling via ~golden-ratio-scroll-screen~. Note that this package
+does provide functions for ~scroll-other-window~.
+
+#+begin_src emacs-lisp
+  (use-package golden-ratio-scroll-screen
+    :ensure t
+    :bind (([remap scroll-up-command]   . golden-ratio-scroll-screen-up)
+	   ([remap scroll-down-command] . golden-ratio-scroll-screen-down)))
+#+end_src
+
+*** Recording undo history
+
+The ~undo-tree-mode~ provided by this package replaces Emacs' undo
+system with a system that treats undo history as what it is: a
+branching tree of changes. Enable ~undo-tree-mode~ globally and save
+undo-tree files into ~aux/undo-tree~.
+
+#+begin_src emacs-lisp
+  (defconst undo-tree-directory
+    (expand-file-name "undo-tree" aux-directory))
+  (use-package undo-tree
+    :ensure t
+    :custom (undo-tree-history-directory-alist
+	     `((".*" . ,undo-tree-directory)))
+    :config (global-undo-tree-mode))
 #+end_src
