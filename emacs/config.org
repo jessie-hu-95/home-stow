@@ -4,32 +4,20 @@
 
 * Contents
 :PROPERTIES:
-:TOC:      :include all :depth 3
+:TOC:      :include all :depth 2 :ignore this
 :END:
 :CONTENTS:
-- [[#contents][Contents]]
 - [[#configuration-for-vinilla-emacs][Configuration for vinilla Emacs]]
   - [[#making-emacs-write-all-auxiliary-files-somewhere-else][Making Emacs write all auxiliary files somewhere else]]
-    - [[#backup-files][Backup files]]
-    - [[#auto-save-files][Auto-save files]]
-    - [[#lock-files][Lock files]]
   - [[#saving-customizations-besides-init-file][Saving Customizations besides init file]]
   - [[#config-modifier-keys][Config modifier keys]]
   - [[#improving-appearance][Improving appearance]]
   - [[#better-scrolling-behavior][Better scrolling behavior]]
   - [[#easing-editing-experience][Easing editing experience]]
   - [[#dired-the-directory-editor][Dired, the directory editor]]
-    - [[#use-external-ls-implementation][Use external ls implementation]]
-    - [[#reuse-directory-buffer][Reuse directory buffer]]
 - [[#enhance-editing-experience-with-third-party-packages][Enhance editing experience with third-party packages]]
   - [[#prerequisites][Prerequisites]]
-    - [[#set-path-and-exec-path][Set $PATH and exec-path]]
-    - [[#bootstrap-the-use-package-macro][Bootstrap the use-package macro]]
   - [[#general-configs-for-all-text-editing-tasks][General configs for all text editing tasks]]
-    - [[#hints-for-prefixed-key-bindings][Hints for prefixed key bindings]]
-    - [[#basic-completion-settings][Basic completion settings]]
-    - [[#never-lose-the-point-again][Never lose the point again]]
-    - [[#recording-undo-history][Recording undo history]]
 - [[#org-mode][Org mode]]
   - [[#show-org-mode-bullets-as-utf-8-characters][Show org-mode bullets as UTF-8 characters]]
   - [[#generate-table-of-contents][Generate table of contents]]
@@ -50,7 +38,7 @@ mechanisms for changing the locations of all these files.
 
 *** Backup files
 
-Save backup files to ~aux/backup~.
+Save backup files to =aux/backup=.
 
 #+begin_src emacs-lisp
   (defconst backup-directory
@@ -65,7 +53,7 @@ Save backup files to ~aux/backup~.
 
 *** Auto-save files
 
-Save auto-save files to ~aux/auto-save~.
+Save auto-save files to =aux/auto-save=.
 
 #+begin_src emacs-lisp
   (defconst auto-save-directory
@@ -79,7 +67,7 @@ Save auto-save files to ~aux/auto-save~.
 
 *** Lock files
 
-Save lock files to ~aux/lock~.
+Save lock files to =aux/lock=.
 
 #+begin_src emacs-lisp
   (defconst lock-directory
@@ -91,9 +79,9 @@ Save lock files to ~aux/lock~.
 
 ** Saving Customizations besides init file
 
-Save customization file to ~custom.el~ in
-~user-emacs-directory~. Suppress error reporting if this file doesn’t
-exist by a non-nil second arg ~t~.
+Save customization file to =custom.el= in
+=user-emacs-directory=. Suppress error reporting if this file doesn’t
+exist by a non-nil second arg =t=.
 
 #+begin_src emacs-lisp
   (defconst custom-file
@@ -118,7 +106,7 @@ For macOS, prevent passing command and control keys to system Toolbox.
     (setq mac-pass-control-to-system nil))
 #+end_src
 
-Use left and right command key as ~super~ and ~meta~ keys
+Use left and right command key as =super= and =meta= keys
 respectively.
 
 #+begin_src emacs-lisp
@@ -127,7 +115,7 @@ respectively.
     (setq mac-right-command-modifier 'meta))
 #+end_src
 
-Additionally, ~C-M-d~ is bound to systemwide searching. To disable it,
+Additionally, =C-M-d= is bound to systemwide searching. To disable it,
 run the following command from the shell.
 
 #+begin_src shell
@@ -160,7 +148,7 @@ Keep point away from the margin at the top and bottom of a window.
   (setq scroll-margin 32)
 #+end_src
 
-When using ~C-v~ and ~M-v~ to scroll up and down, the point jumps to
+When using =C-v= and =M-v= to scroll up and down, the point jumps to
 the center of a window. To disable this feature,
 
 #+begin_src emacs-lisp
@@ -168,7 +156,7 @@ the center of a window. To disable this feature,
 #+end_src
 
 If point moves off-screen, redisplay will scroll by up to
-~scroll-conservatively~ lines in order to bring point just barely onto
+=scroll-conservatively= lines in order to bring point just barely onto
 the screen again. If the value is greater than 100, redisplay will
 never recenter point, but will always scroll just enough text to bring
 point into view, even if you move far away.
@@ -189,7 +177,7 @@ Remember recent visited files.
   (global-set-key (kbd "C-x C-r") 'recentf-open-files)
 #+end_src
 
-By default, ~recentf~ saves the list of recent files on exiting
+By default, =recentf= saves the list of recent files on exiting
 Emacs. If Emacs exits abruptly for some reason the recent file list
 will be lost. To call `recentf-save-list` periodically, e.g. every
 minutes:
@@ -220,7 +208,7 @@ Enlarge kill ring size.
   (setq kill-ring-max 512)
 #+end_src
 
-Let ~M-F~ and ~M-B~ behave like Vim's ~w~ and ~b~ keys in normal mode.
+Let =M-F= and =M-B= behave like Vim's =w= and =b= keys in normal mode.
 
 #+begin_src emacs-lisp
   (require 'misc)
@@ -233,10 +221,10 @@ Let ~M-F~ and ~M-B~ behave like Vim's ~w~ and ~b~ keys in normal mode.
 Dired makes an Emacs buffer containing a listing of a directory, and
 optionally some of its subdirectories as well.
 
-*** Use external ~ls~ implementation
+*** Use external =ls= implementation
 
-Tell Dired to use external ~ls~ program. The last line will try to get
-an environment variable ~LA_OPTS~ to use as ~dired-listing-switches~,
+Tell Dired to use external =ls= program. The last line will try to get
+an environment variable =LA_OPTS= to use as =dired-listing-switches=,
 if the variable not defined, leave it unchanged.
 
 #+begin_src emacs-lisp
@@ -252,19 +240,19 @@ if the variable not defined, leave it unchanged.
 In Dired, when a directory chosen to visit, it is normally visited in
 a new buffer – the Dired buffer chosen it in is not deleted.
 
-Command ~dired-find-alternate-file~ replaces the current Dired buffer
+Command =dired-find-alternate-file= replaces the current Dired buffer
 with another buffer (it kills the current buffer). To enable this
-command and to bind it to ~RET~,
+command and to bind it to =RET=,
 
 #+begin_src emacs-lisp
   (put 'dired-find-alternate-file 'disabled nil)
   (define-key dired-mode-map (kbd "RET") 'dired-find-alternate-file)
 #+end_src
 
-In any case, the approach of just using ~dired-find-alternate-file~
+In any case, the approach of just using =dired-find-alternate-file=
 does not help with mouse clicks to visit a file or directory. This
-command also does not help when using ~^~ to move up to the parent
-directory. To kill the current directory (the child) when using ~^~,
+command also does not help when using =^= to move up to the parent
+directory. To kill the current directory (the child) when using =^=,
 
 #+begin_src emacs-lisp
   (require 'dired)
@@ -278,10 +266,10 @@ directory. To kill the current directory (the child) when using ~^~,
 
 ** Prerequisites
 
-*** Set ~$PATH~ and ~exec-path~
+*** Set =$PATH= and =exec-path=
 
-Some packages need some build tools available in user's shell ~PATH~
-environment variable.  Set up Emacs' ~exec-path~ and ~PATH~
+Some packages need some build tools available in user's shell =PATH=
+environment variable.  Set up Emacs' =exec-path= and =PATH=
 environment variable to match that used by the user's shell. This is
 particularly useful under Mac OS X and macOS, where GUI apps are not
 started from a shell.
@@ -304,13 +292,13 @@ Invoke this function on macOS:
     (set-exec-path-from-shell-PATH))
 #+end_src
 
-*** Bootstrap the ~use-package~ macro
+*** Bootstrap the =use-package= macro
 
-The ~use-package~ macro allows one to isolate package configuration in
+The =use-package= macro allows one to isolate package configuration in
 the init file in a way that is both performance-oriented and, well,
 tidy.
 
-First, add Melpa to ~package-archives~:
+First, add Melpa to =package-archives=:
 
 #+begin_src emacs-lisp
   (require 'package)
@@ -319,7 +307,7 @@ First, add Melpa to ~package-archives~:
   (package-initialize)
 #+end_src
 
-Install ~use-package~ unless it exists.
+Install =use-package= unless it exists.
 
 #+begin_src emacs-lisp
   (unless (package-installed-p 'use-package)
@@ -331,7 +319,7 @@ Install ~use-package~ unless it exists.
 
 *** Hints for prefixed key bindings
 
-~which-key~ is a minor mode for Emacs that displays the key bindings
+=which-key= is a minor mode for Emacs that displays the key bindings
 following your currently entered incomplete command (a prefix) in a
 popup.
 
@@ -355,7 +343,7 @@ retrieve and display completion candidates.
 
 *** Never lose the point again
 
-~beacon~ is a global minor-mode. Whenever the window scrolls a light will
+=beacon= is a global minor-mode. Whenever the window scrolls a light will
 shine on top of the point so we know where it is.
 
 #+begin_src emacs-lisp
@@ -369,8 +357,8 @@ shine on top of the point so we know where it is.
 #+end_src
 
 Scroll screen down or up, and highlight current line before or after
-scrolling via ~golden-ratio-scroll-screen~. Note that this package
-does provide functions for ~scroll-other-window~.
+scrolling via =golden-ratio-scroll-screen=. Note that this package
+does provide functions for =scroll-other-window=.
 
 #+begin_src emacs-lisp
   (use-package golden-ratio-scroll-screen
@@ -381,10 +369,10 @@ does provide functions for ~scroll-other-window~.
 
 *** Recording undo history
 
-The ~undo-tree-mode~ provided by this package replaces Emacs' undo
+The =undo-tree-mode= provided by this package replaces Emacs' undo
 system with a system that treats undo history as what it is: a
-branching tree of changes. Enable ~undo-tree-mode~ globally and save
-undo-tree files into ~aux/undo-tree~.
+branching tree of changes. Enable =undo-tree-mode= globally and save
+undo-tree files into =aux/undo-tree=.
 
 #+begin_src emacs-lisp
   (defconst undo-tree-directory
@@ -398,7 +386,7 @@ undo-tree files into ~aux/undo-tree~.
 
 * Org mode
 
-** Show ~org-mode~ bullets as UTF-8 characters
+** Show =org-mode= bullets as UTF-8 characters
 
 #+begin_src emacs-lisp
   (use-package org-bullets
