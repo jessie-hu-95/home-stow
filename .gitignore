@@ -5,6 +5,7 @@ emacs/aux
 emacs/elpa
 emacs/recentf
 emacs/places
+emacs/transient
 emacs/config.el
 emacs/custom.el
 emacs/config.[!o][!r][!g]

@@ -194,7 +194,9 @@ will be lost. To call `recentf-save-list` periodically, e.g. every
 minutes:
 
 #+begin_src emacs-lisp
-  (run-at-time nil 60 'recentf-save-list)
+  (run-at-time nil 60
+	       (lambda ()
+		 (let ((save-silently t)) (recentf-save-list))))
 #+end_src
 
 Remember point position for each buffer.
@@ -249,15 +251,22 @@ if the variable not defined, leave it unchanged.
 *** Reuse directory buffer
 
 In Dired, when a directory chosen to visit, it is normally visited in
-a new buffer – the Dired buffer chosen it in is not deleted.
-
-Command =dired-find-alternate-file= replaces the current Dired buffer
-with another buffer (it kills the current buffer). To enable this
-command and to bind it to =RET=,
+a new buffer – the Dired buffer chosen it in is not deleted.  There is
+a command =dired-find-alternate-file= replacing the current Dired
+buffer with another buffer (it kills the current buffer).  The
+following code enables this command and binds =RET= to a lambda
+function, which invokes =dired-find-alternate-file= if the file is a
+directory, invokes =dired-find-file= if not.
 
 #+begin_src emacs-lisp
   (put 'dired-find-alternate-file 'disabled nil)
-  (define-key dired-mode-map (kbd "RET") 'dired-find-alternate-file)
+  (define-key dired-mode-map
+    (kbd "RET") (lambda ()
+		  (interactive)
+		  (let* ((filename (dired-get-filename)))
+		    (if (file-directory-p filename)
+			(dired-find-alternate-file)
+		      (dired-find-file)))))
 #+end_src
 
 In any case, the approach of just using =dired-find-alternate-file=
@@ -270,8 +279,12 @@ directory. To kill the current directory (the child) when using =^=,
     (add-hook 'dired-mode-hook
 	      (lambda ()
 		(define-key dired-mode-map (kbd "^")
-		  (lambda () (interactive) (find-alternate-file ".."))))))
+		  (lambda ()
+		    (interactive) (find-alternate-file ".."))))))
 #+end_src
+
+Now, one Dired buffer would be always reused and not closed when open
+a file.
 
 * Enhance editing experience with third-party packages
 
@@ -487,7 +500,8 @@ Load the file mentioned in the post [[https://karthinks.com/software/avy-can-do-
 
 #+begin_src emacs-lisp
   (use-package avy
-    :config (load-file "avy-actions.el"))
+    :config (load-file
+	     (expand-file-name "avy-actions.el" user-emacs-directory)))
 #+end_src
 
 * Org mode
