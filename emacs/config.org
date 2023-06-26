@@ -289,6 +289,16 @@ directory. To kill the current directory (the child) when using =^=,
 Now, one Dired buffer would be always reused and not closed when open
 a file.
 
+*** Prefixing Dired buffers
+
+#+begin_src emacs-lisp
+  (add-hook 'dired-mode-hook
+	    (lambda ()
+	      (rename-buffer
+	       (generate-new-buffer-name
+		(format "dired %s" dired-directory)))))
+#+end_src
+
 * Enhance editing experience with third-party packages
 
 ** Prerequisites
