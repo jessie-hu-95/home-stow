@@ -153,12 +153,6 @@ Enable visual line, line number display and highlight current line.
 
 ** Better scrolling behavior
 
-Keep point away from the margin at the top and bottom of a window.
-
-#+begin_src emacs-lisp
-  (setq scroll-margin 32)
-#+end_src
-
 When using =C-v= and =M-v= to scroll up and down, the point jumps to
 the center of a window. To disable this feature,
 
@@ -260,13 +254,14 @@ directory, invokes =dired-find-file= if not.
 
 #+begin_src emacs-lisp
   (put 'dired-find-alternate-file 'disabled nil)
-  (define-key dired-mode-map
-    (kbd "RET") (lambda ()
-		  (interactive)
-		  (let* ((filename (dired-get-filename)))
-		    (if (file-directory-p filename)
-			(dired-find-alternate-file)
-		      (dired-find-file)))))
+  (with-eval-after-load "dired"
+    (define-key dired-mode-map
+      (kbd "RET") (lambda ()
+		    (interactive)
+		    (let* ((filename (dired-get-filename)))
+		      (if (file-directory-p filename)
+			  (dired-find-alternate-file)
+			(dired-find-file))))))
 #+end_src
 
 In any case, the approach of just using =dired-find-alternate-file=
@@ -275,7 +270,7 @@ command also does not help when using =^= to move up to the parent
 directory. To kill the current directory (the child) when using =^=,
 
 #+begin_src emacs-lisp
-  (eval-after-load 'dired
+  (with-eval-after-load "dired"
     (add-hook 'dired-mode-hook
 	      (lambda ()
 		(define-key dired-mode-map (kbd "^")
@@ -337,7 +332,6 @@ Install =use-package= unless it exists.
   (unless (package-installed-p 'use-package)
     (package-refresh-contents)
     (package-install 'use-package))
-  (setq use-package-always-ensure t)
 #+end_src
 
 ** General configs for all text editing tasks
@@ -350,6 +344,7 @@ popup.
 
 #+begin_src emacs-lisp
   (use-package which-key
+    :ensure t
     :config (which-key-mode))
 #+end_src
 
@@ -361,6 +356,7 @@ retrieve and display completion candidates.
 
 #+begin_src emacs-lisp
   (use-package company
+    :ensure t
     :config (global-company-mode))
 #+end_src
 
@@ -371,11 +367,11 @@ shine on top of the point so we know where it is.
 
 #+begin_src emacs-lisp
   (use-package beacon
+    :ensure t
     :custom ((beacon-size 8)
 	     (beacon-blink-delay 0.1)
 	     (beacon-blink-duration 0.5))
-    :config (beacon-mode)
-    )
+    :config (beacon-mode))
 #+end_src
 
 Scroll screen down or up, and highlight current line before or after
@@ -384,6 +380,7 @@ does provide functions for =scroll-other-window=.
 
 #+begin_src emacs-lisp
   (use-package golden-ratio-scroll-screen
+    :ensure t
     :bind (([remap scroll-up-command]   . golden-ratio-scroll-screen-up)
 	   ([remap scroll-down-command] . golden-ratio-scroll-screen-down)))
 #+end_src
@@ -399,6 +396,7 @@ undo-tree files into =aux/undo-tree=.
   (defconst undo-tree-directory
     (expand-file-name "undo-tree" aux-directory))
   (use-package undo-tree
+    :ensure t
     :custom (undo-tree-history-directory-alist
 	     `((".*" . ,undo-tree-directory)))
     :config (global-undo-tree-mode))
@@ -432,6 +430,7 @@ installing =counsel=, the other two are brought in as dependencies.
 
 #+begin_src emacs-lisp
   (use-package counsel
+    :ensure t
     :custom ((ivy-use-virtual-buffers t)
 	     (ivy-count-format "(%d/%d) ")
 	     (ivy-re-builders-alist
@@ -487,21 +486,43 @@ bindings, =M-o ?=.
 
 #+begin_src emacs-lisp
   (use-package ace-window
+    :ensure t
     :custom ((aw-keys '(?s ?h ?t ?n ?e ?o))
-	     (aw-dispatch-always t))
+	     (aw-dispatch-always t)
+	     (aw-char-position 'top-left))
     :custom-face (aw-leading-char-face
 		  ((t (:inherit ace-jump-face-foreground :height 3.0))))
-    :bind ("M-o" . ace-window))
+    :bind ("M-o" . ace-window)
+    :config
+    (setq aw-dispatch-alist
+	  '((?x aw-delete-window "Delete Window")
+	    (?m aw-swap-window "Swap Windows")
+	    (?M aw-move-window "Move Window")
+	    (?c aw-copy-window "Copy Window")
+	    (?j aw-switch-buffer-in-window "Select Buffer")
+	    (?N aw-flip-window)
+	    (?u aw-switch-buffer-other-window "Switch Buffer Other Window")
+	    (?c aw-split-window-fair "Split Fair Window")
+	    (?v aw-split-window-vert "Split Vert Window")
+	    (?b aw-split-window-horz "Split Horz Window")
+	    (?O delete-other-windows "Delete Other Windows")
+	    (?? aw-show-dispatch-help))))
 #+end_src
 
 *** Navigating around visible texts
 
-Load the file mentioned in the post [[https://karthinks.com/software/avy-can-do-anything][AVY CAN DO ANYTHING]].
+Load the file mentioned in the post [[https://karthinks.com/software/avy-can-do-anything][AVY CAN DO ANYTHING]]. Then, change
+the global key binding for =avy-goto-char-timer=, and set =avy-keys=
+to keys not used in =avy-actions.el=.
 
 #+begin_src emacs-lisp
   (use-package avy
-    :config (load-file
-	     (expand-file-name "avy-actions.el" user-emacs-directory)))
+    :ensure t
+    :config
+    (progn
+      (load-file (expand-file-name "avy-actions.el" user-emacs-directory))
+      (global-set-key (kbd "C-.") 'avy-goto-char-timer)
+      (setq avy-keys '(?s ?h ?n ?e ?o ?a ?i ?d ?r ?u ?p ?c ?l))))
 #+end_src
 
 * Org mode
@@ -510,11 +531,13 @@ Load the file mentioned in the post [[https://karthinks.com/software/avy-can-do-
 
 #+begin_src emacs-lisp
   (use-package org-bullets
+    :ensure t
     :hook (org-mode . org-bullets-mode))
 #+end_src
 
 ** Generate table of contents
 
 #+begin_src emacs-lisp
-  (use-package org-make-toc)
+  (use-package org-make-toc
+    :ensure t)
 #+end_src
