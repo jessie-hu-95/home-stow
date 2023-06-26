@@ -14,13 +14,17 @@
   - [[#config-modifier-keys][Config modifier keys]]
   - [[#improving-appearance][Improving appearance]]
   - [[#better-scrolling-behavior][Better scrolling behavior]]
-  - [[#easing-editing-experience][Easing editing experience]]
+  - [[#improving-editing-experience][Improving editing experience]]
   - [[#dired-the-directory-editor][Dired, the directory editor]]
 - [[#enhance-editing-experience-with-third-party-packages][Enhance editing experience with third-party packages]]
   - [[#prerequisites][Prerequisites]]
   - [[#general-configs-for-all-text-editing-tasks][General configs for all text editing tasks]]
   - [[#completion-frame-work---ivy-counsel-swiper][Completion frame work - Ivy, Counsel, Swiper]]
-  - [[#navigating-effectively][Navigating effectively]]
+  - [[#navigating-around-visible-texts][Navigating around visible texts]]
+  - [[#terminal-emulator---vterm][Terminal emulator - vterm]]
+  - [[#version-control-system-vcs---magit][Version control system (VCS) - Magit]]
+  - [[#language-server-protocol-lsp---eglot][Language Server Protocol (LSP) - Eglot]]
+  - [[#packages-for-each-language][Packages for each language]]
 - [[#org-mode][Org mode]]
   - [[#show-org-mode-bullets-as-utf-8-characters][Show org-mode bullets as UTF-8 characters]]
   - [[#generate-table-of-contents][Generate table of contents]]
@@ -153,6 +157,12 @@ Enable visual line, line number display and highlight current line.
 
 ** Better scrolling behavior
 
+Keep point away from the margin at the top and bottom of a window.
+
+#+begin_src emacs-lisp
+  (setq scroll-margin 32)
+#+end_src
+
 When using =C-v= and =M-v= to scroll up and down, the point jumps to
 the center of a window. To disable this feature,
 
@@ -170,7 +180,7 @@ point into view, even if you move far away.
   (setq scroll-conservatively 101)
 #+end_src
 
-** Easing editing experience
+** Improving editing experience
 
 Remember recent visited files.
 
@@ -185,12 +195,10 @@ Remember recent visited files.
 By default, =recentf= saves the list of recent files on exiting
 Emacs. If Emacs exits abruptly for some reason the recent file list
 will be lost. To call `recentf-save-list` periodically, e.g. every
-minutes:
+three minutes:
 
 #+begin_src emacs-lisp
-  (run-at-time nil 60
-	       (lambda ()
-		 (let ((save-silently t)) (recentf-save-list))))
+  (run-at-time nil (* 3 60) 'recentf-save-list)
 #+end_src
 
 Remember point position for each buffer.
@@ -402,6 +410,16 @@ undo-tree files into =aux/undo-tree=.
     :config (global-undo-tree-mode))
 #+end_src
 
+*** Buffer management - Perspective
+
+#+begin_src emacs-lisp
+  (use-package perspective
+    :ensure t
+    :bind ("C-x C-b" . persp-list-buffers)
+    :custom (persp-mode-prefix-key (kbd "C-c M-p"))
+    :config (persp-mode))
+#+end_src
+
 ** Completion frame work - Ivy, Counsel, Swiper
 
 These three packages are contained in a same GitHub repository, and
@@ -436,6 +454,7 @@ installing =counsel=, the other two are brought in as dependencies.
 	     (ivy-re-builders-alist
 	      '((swiper-isearch . ivy--regex-plus)
 		(t              . ivy--regex-fuzzy)))
+	     (ivy-height-alist '((t . 16)))
 	     (enable-recursive-minibuffers t))
     :bind (("C-s"     . swiper-isearch)
 	   ("M-x"     . counsel-M-x)
@@ -472,44 +491,7 @@ own regex builder by customizing =ivy-re-builders-alist=.
 2. =M-r= (=ivy-toggle-regexp-quote=): toggle between input as regexp
    or not.
 
-** Navigating effectively
-
-*** Navigating around windows
-
-This package aims to take the speed and predictability of =windmove=
-and pack it into a single key binding, similar to
-=other-window=. Since I use the Workman keyboard layout, =aw-keys= is
-set to the home keys of Workman layout. Additionally, to enable
-prefixed key bindings with fewer than three windows,
-=aw-dispatch-always= should be set to =t=. To checkout these key
-bindings, =M-o ?=.
-
-#+begin_src emacs-lisp
-  (use-package ace-window
-    :ensure t
-    :custom ((aw-keys '(?s ?h ?t ?n ?e ?o))
-	     (aw-dispatch-always t)
-	     (aw-char-position 'top-left))
-    :custom-face (aw-leading-char-face
-		  ((t (:inherit ace-jump-face-foreground :height 3.0))))
-    :bind ("M-o" . ace-window)
-    :config
-    (setq aw-dispatch-alist
-	  '((?x aw-delete-window "Delete Window")
-	    (?m aw-swap-window "Swap Windows")
-	    (?M aw-move-window "Move Window")
-	    (?c aw-copy-window "Copy Window")
-	    (?j aw-switch-buffer-in-window "Select Buffer")
-	    (?N aw-flip-window)
-	    (?u aw-switch-buffer-other-window "Switch Buffer Other Window")
-	    (?c aw-split-window-fair "Split Fair Window")
-	    (?v aw-split-window-vert "Split Vert Window")
-	    (?b aw-split-window-horz "Split Horz Window")
-	    (?O delete-other-windows "Delete Other Windows")
-	    (?? aw-show-dispatch-help))))
-#+end_src
-
-*** Navigating around visible texts
+** Navigating around visible texts
 
 Load the file mentioned in the post [[https://karthinks.com/software/avy-can-do-anything][AVY CAN DO ANYTHING]]. Then, change
 the global key binding for =avy-goto-char-timer=, and set =avy-keys=
@@ -521,8 +503,65 @@ to keys not used in =avy-actions.el=.
     :config
     (progn
       (load-file (expand-file-name "avy-actions.el" user-emacs-directory))
-      (global-set-key (kbd "C-.") 'avy-goto-char-timer)
+      (global-set-key (kbd "C-r") 'avy-goto-char-timer)
       (setq avy-keys '(?s ?h ?n ?e ?o ?a ?i ?d ?r ?u ?p ?c ?l))))
+#+end_src
+
+** Terminal emulator - vterm
+
+=vterm= is fully-fledged terminal emulator inside GNU Emacs based on
+libvterm, a C library. As a result of using compiled code (instead of
+elisp), emacs-libvterm is fully capable, fast, and it can seamlessly
+handle large outputs.
+
+#+begin_src emacs-lisp
+  (use-package vterm
+    :ensure t
+    :bind (("s-t" . vterm)
+	   :map vterm-mode-map
+	   ("C-q"   . vterm-send-next-key)
+	   ("C-M-v" . nil)
+	   :map vterm-copy-mode-map
+	   ("M-w" . vterm-copy-mode-done))
+    :hook (vterm-mode . (lambda ()
+			  (display-line-numbers-mode -1)
+			  (setq-local global-hl-line-mode nil)))
+    :custom (vterm-buffer-name-string "vterm %s")
+    :config (add-to-list 'vterm-eval-cmds
+			 '("update-pwd"
+			   (lambda (path)
+			     (setq default-directory path)))))
+#+end_src
+
+** Version control system (VCS) - Magit
+
+#+begin_src emacs-lisp
+  (use-package magit
+    :ensure t)
+#+end_src
+
+** Language Server Protocol (LSP) - Eglot
+
+Eglot is the Emacs client for the Language Server Protocol (LSP). The
+name "Eglot" is an acronym that stands for "Emacs Polyglot". Eglot
+provides infrastructure and a set of commands for enriching the source
+code editing capabilities of Emacs via LSP.
+
+#+begin_src emacs-lisp
+  (use-package eglot
+    :ensure t
+    :hook (prog-mode . eglot-ensure)
+    :custom (eglot-extend-to-xref t))
+#+end_src
+
+** Packages for each language
+
+*** Python
+
+#+begin_src emacs-lisp
+  (use-package pyvenv-auto
+    :ensure t
+    :hook (python-mode . pyvenv-auto-run))
 #+end_src
 
 * Org mode
