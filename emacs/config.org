@@ -453,14 +453,25 @@ undo-tree files into =aux/undo-tree=.
     :config (global-undo-tree-mode))
 #+end_src
 
-*** Buffer management - Perspective
+*** Buffer management - Workroom
 
 #+begin_src emacs-lisp
-  (use-package perspective
+  (use-package ibuffer-project
     :ensure t
-    :bind ("C-x C-b" . persp-list-buffers)
-    :custom (persp-mode-prefix-key (kbd "C-c M-p"))
-    :config (persp-mode))
+    :hook
+    (ibuffer . (lambda ()
+		 (setq ibuffer-filter-groups
+		       (ibuffer-project-generate-filter-groups))
+		 (unless (eq ibuffer-sorting-mode 'project-file-relative)
+		   (ibuffer-do-sort-by-project-file-relative)))))
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package workroom
+    :ensure t
+    :bind ([remap list-buffers] . workroom-ibuffer)
+    :init (progn (workroom-mode)
+		 (workroom-auto-project-workroom-mode)))
 #+end_src
 
 ** Completion frame work - Ivy, Counsel, Swiper
@@ -545,10 +556,8 @@ in =avy-actions.el= has been removed.
   (use-package avy
     :ensure t
     :bind (("C-." . avy-goto-char-timer)
-	   ("C-," . avy-goto-char)
 	   ("C-;" . avy-goto-char-in-line)
-	   :map isearch-mode-map
-	   ("C-." . avy-isearch))
+	   ("C-:" . avy-goto-char))
     :config
     (progn
       (load-file (expand-file-name "avy-actions.el" user-emacs-directory))
