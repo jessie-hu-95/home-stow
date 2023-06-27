@@ -2,10 +2,10 @@
 ;; Tweak as desired.
 
 (package-install 'avy)
-(setq avy-keys '(?q ?e ?r ?y ?u ?o ?p
-                    ?a ?s ?d ?f ?g ?h ?j
-                    ?k ?l ?' ?x ?c ?v ?b
-                    ?n ?, ?/))
+;; (setq avy-keys '(?q ?e ?r ?y ?u ?o ?p
+;;                     ?a ?s ?d ?f ?g ?h ?j
+;;                     ?k ?l ?' ?x ?c ?v ?b
+;;                     ?n ?, ?/))
 
 
 (defun avy-show-dispatch-help ()  
@@ -30,7 +30,7 @@
     (message "%s" (apply #'concat (nreverse display-strings)))))
 
 ;; Avy command
-(global-set-key (kbd "M-j") 'avy-goto-char-timer)
+;; (global-set-key (kbd "M-j") 'avy-goto-char-timer)
 
 ;; Kill text
 (defun avy-action-kill-whole-line (pt)
@@ -155,7 +155,7 @@ argument, query for word to search."
 (setf (alist-get ?. avy-dispatch-alist) 'avy-action-embark)
 
 ;; Avy + Isearch
-(define-key isearch-mode-map (kbd "M-j") 'avy-isearch)
+;; (define-key isearch-mode-map (kbd "M-j") 'avy-isearch)
 
 ;; Isearch in other windows
 (defun isearch-forward-other-window (prefix)
@@ -178,8 +178,8 @@ argument, query for word to search."
         (isearch-backward)
         (other-window (- next))))))
 
-(define-key global-map (kbd "C-M-s") 'isearch-forward-other-window)
-(define-key global-map (kbd "C-M-r") 'isearch-backward-other-window)
+;; (define-key global-map (kbd "C-M-s") 'isearch-forward-other-window)
+;; (define-key global-map (kbd "C-M-r") 'isearch-backward-other-window)
 
 ;; Google search: requires executable Tuxi
 (defvar google-search-history nil

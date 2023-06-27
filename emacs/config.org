@@ -140,6 +140,15 @@ run the following command from the shell.
 
 ** Improving appearance
 
+Load a good-looking theme:
+
+#+begin_src emacs-lisp
+  (use-package ef-themes
+    :ensure t
+    :custom (ef-themes-region '(no-extend))
+    :config (load-theme 'ef-summer t))
+#+end_src
+
 Disable scroll bar and tool bar.
 
 #+begin_src emacs-lisp
@@ -262,7 +271,7 @@ directory, invokes =dired-find-file= if not.
 
 #+begin_src emacs-lisp
   (put 'dired-find-alternate-file 'disabled nil)
-  (with-eval-after-load "dired"
+  (with-eval-after-load 'dired
     (define-key dired-mode-map
       (kbd "RET") (lambda ()
 		    (interactive)
@@ -278,7 +287,7 @@ command also does not help when using =^= to move up to the parent
 directory. To kill the current directory (the child) when using =^=,
 
 #+begin_src emacs-lisp
-  (with-eval-after-load "dired"
+  (with-eval-after-load 'dired
     (add-hook 'dired-mode-hook
 	      (lambda ()
 		(define-key dired-mode-map (kbd "^")
@@ -297,6 +306,27 @@ a file.
 	      (rename-buffer
 	       (generate-new-buffer-name
 		(format "dired %s" dired-directory)))))
+#+end_src
+
+*** Start up with Dired
+
+#+begin_src emacs-lisp
+  (setq initial-buffer-choice (expand-file-name "~/repos"))
+#+end_src
+
+*** Hide uninteresting files
+
+#+begin_src emacs-lisp
+  (with-eval-after-load 'dired
+    (require 'dired-x))
+  (add-hook 'dired-mode-hook
+	    (lambda ()
+	      (progn
+		(setq dired-omit-files
+		      (concat dired-omit-files "\\|\.DS_Store"))
+		(setq dired-omit-files
+		      (concat dired-omit-files "\\|\.CFUserTextEncoding"))
+		(dired-omit-mode))))
 #+end_src
 
 * Enhance editing experience with third-party packages
@@ -341,7 +371,6 @@ First, add Melpa to =package-archives=:
   (require 'package)
   (add-to-list 'package-archives
 	       '("melpa" . "https://melpa.org/packages/"))
-  (package-initialize)
 #+end_src
 
 Install =use-package= unless it exists.
@@ -387,6 +416,7 @@ shine on top of the point so we know where it is.
   (use-package beacon
     :ensure t
     :custom ((beacon-size 8)
+	     (beacon-color "#cf0090")
 	     (beacon-blink-delay 0.1)
 	     (beacon-blink-duration 0.5))
     :config (beacon-mode))
@@ -399,6 +429,9 @@ does provide functions for =scroll-other-window=.
 #+begin_src emacs-lisp
   (use-package golden-ratio-scroll-screen
     :ensure t
+    :custom-face
+    (golden-ratio-scroll-highlight-line-face
+     ((t (:extend t :background "#cf0090" :foreground "white" :weight bold))))
     :bind (([remap scroll-up-command]   . golden-ratio-scroll-screen-up)
 	   ([remap scroll-down-command] . golden-ratio-scroll-screen-down)))
 #+end_src
@@ -459,12 +492,9 @@ installing =counsel=, the other two are brought in as dependencies.
 #+begin_src emacs-lisp
   (use-package counsel
     :ensure t
-    :custom ((ivy-use-virtual-buffers t)
+    :custom ((ivy-height 16)
+	     (ivy-use-virtual-buffers t)
 	     (ivy-count-format "(%d/%d) ")
-	     (ivy-re-builders-alist
-	      '((swiper-isearch . ivy--regex-plus)
-		(t              . ivy--regex-fuzzy)))
-	     (ivy-height-alist '((t . 16)))
 	     (enable-recursive-minibuffers t))
     :bind (("C-s"     . swiper-isearch)
 	   ("M-x"     . counsel-M-x)
@@ -476,7 +506,12 @@ installing =counsel=, the other two are brought in as dependencies.
 	   ("C-c v"   . ivy-push-view)
 	   ("C-c V"   . ivy-pop-view)
 	   ("C-c C-r" . ivy-resume))
-    :config (ivy-mode))
+    :config
+    (ivy-mode)
+    (setq ivy-initial-inputs-alist nil)
+    (setq ivy-re-builders-alist
+	  '((swiper-isearch . ivy--regex-plus)
+	    (t              . ivy--regex-fuzzy))))
 #+end_src
 
 Notes that =M-y= would not pop up minibuffer when a minibuffer already
@@ -503,17 +538,20 @@ own regex builder by customizing =ivy-re-builders-alist=.
 
 ** Navigating around visible texts
 
-Load the file mentioned in the post [[https://karthinks.com/software/avy-can-do-anything][AVY CAN DO ANYTHING]]. Then, change
-the global key binding for =avy-goto-char-timer=, and set =avy-keys=
-to keys not used in =avy-actions.el=.
+Load the file mentioned in the post [[https://karthinks.com/software/avy-can-do-anything][AVY CAN DO ANYTHING]]. Key bindings
+in =avy-actions.el= has been removed.
 
 #+begin_src emacs-lisp
   (use-package avy
     :ensure t
+    :bind (("C-." . avy-goto-char-timer)
+	   ("C-," . avy-goto-char)
+	   ("C-;" . avy-goto-char-in-line)
+	   :map isearch-mode-map
+	   ("C-." . avy-isearch))
     :config
     (progn
       (load-file (expand-file-name "avy-actions.el" user-emacs-directory))
-      (global-set-key (kbd "C-r") 'avy-goto-char-timer)
       (setq avy-keys '(?s ?h ?n ?e ?o ?a ?i ?d ?r ?u ?p ?c ?l))))
 #+end_src
 
