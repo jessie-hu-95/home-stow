@@ -140,13 +140,10 @@ run the following command from the shell.
 
 ** Improving appearance
 
-Load a good-looking theme:
+Set font size and line spacing:
 
 #+begin_src emacs-lisp
-  (use-package ef-themes
-    :ensure t
-    :custom (ef-themes-region '(no-extend))
-    :config (load-theme 'ef-summer t))
+  (set-face-attribute 'default nil :height 130)
 #+end_src
 
 Disable scroll bar and tool bar.
@@ -308,11 +305,11 @@ a file.
 		(format "dired %s" dired-directory)))))
 #+end_src
 
-*** Start up with Dired
+# *** Start up with Dired
 
-#+begin_src emacs-lisp
-  (setq initial-buffer-choice (expand-file-name "~/repos"))
-#+end_src
+# #+begin_src emacs-lisp
+#   (setq initial-buffer-choice (expand-file-name "~/repos"))
+# #+end_src
 
 *** Hide uninteresting files
 
@@ -379,6 +376,15 @@ Install =use-package= unless it exists.
   (unless (package-installed-p 'use-package)
     (package-refresh-contents)
     (package-install 'use-package))
+#+end_src
+
+Load a good-looking theme:
+
+#+begin_src emacs-lisp
+  (use-package ef-themes
+    :ensure t
+    :custom (ef-themes-region '(no-extend))
+    :config (load-theme 'ef-summer t))
 #+end_src
 
 ** General configs for all text editing tasks
@@ -453,25 +459,29 @@ undo-tree files into =aux/undo-tree=.
     :config (global-undo-tree-mode))
 #+end_src
 
-*** Buffer management - Workroom
+*** Buffer and window management
 
 #+begin_src emacs-lisp
-  (use-package ibuffer-project
-    :ensure t
-    :hook
-    (ibuffer . (lambda ()
-		 (setq ibuffer-filter-groups
-		       (ibuffer-project-generate-filter-groups))
-		 (unless (eq ibuffer-sorting-mode 'project-file-relative)
-		   (ibuffer-do-sort-by-project-file-relative)))))
+  (winner-mode)
 #+end_src
 
 #+begin_src emacs-lisp
-  (use-package workroom
+  (use-package perspective
     :ensure t
-    :bind ([remap list-buffers] . workroom-ibuffer)
-    :init (progn (workroom-mode)
-		 (workroom-auto-project-workroom-mode)))
+    :bind (("C-x C-b" . persp-list-buffers)
+	   ("C-x b"   . persp-counsel-switch-buffer))
+    :custom ((persp-mode-prefix-key (kbd "s-p"))
+	     (persp-state-default-file (expand-file-name "persp-state" user-emacs-directory)))
+    :init (persp-mode))
+  (run-at-time nil (* 3 60) 'persp-state-save)
+#+end_src
+
+*** Window switch key binding
+
+#+begin_src emacs-lisp
+  (global-set-key (kbd "M-o") 'other-window)
+  (global-set-key (kbd "M-O")
+		  (lambda () (interactive) (other-window -1)))
 #+end_src
 
 ** Completion frame work - Ivy, Counsel, Swiper
@@ -512,11 +522,7 @@ installing =counsel=, the other two are brought in as dependencies.
 	   ("C-x C-f" . counsel-find-file)
 	   ("M-y"     . counsel-yank-pop)
 	   ("C-h f"   . counsel-describe-function)
-	   ("C-h v"   . counsel-describe-variable)
-	   ("C-x b"   . ivy-switch-buffer)
-	   ("C-c v"   . ivy-push-view)
-	   ("C-c V"   . ivy-pop-view)
-	   ("C-c C-r" . ivy-resume))
+	   ("C-h v"   . counsel-describe-variable))
     :config
     (ivy-mode)
     (setq ivy-initial-inputs-alist nil)
@@ -556,8 +562,8 @@ in =avy-actions.el= has been removed.
   (use-package avy
     :ensure t
     :bind (("C-." . avy-goto-char-timer)
-	   ("C-;" . avy-goto-char-in-line)
-	   ("C-:" . avy-goto-char))
+	   ("C-:" . avy-goto-char-in-line)
+	   ("C-;" . avy-goto-char))
     :config
     (progn
       (load-file (expand-file-name "avy-actions.el" user-emacs-directory))
@@ -619,6 +625,18 @@ code editing capabilities of Emacs via LSP.
   (use-package pyvenv-auto
     :ensure t
     :hook (python-mode . pyvenv-auto-run))
+#+end_src
+
+*** Markdown
+
+#+begin_src emacs-lisp
+  (use-package markdown-mode :ensure t)
+#+end_src
+
+*** CSV
+
+#+begin_src emacs-lisp
+  (use-package csv-mode :ensure t)
 #+end_src
 
 * Org mode
