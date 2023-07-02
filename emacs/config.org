@@ -76,6 +76,17 @@
   (elpaca-wait)
 #+end_src
 
+** Hide mode line lighter
+
+#+begin_src emacs-lisp
+  (use-package diminish)
+  (elpaca-wait)
+  (diminish 'visual-line-mode)
+  (diminish 'line-number-mode)
+  (add-hook 'eldoc-mode-hook
+	    (lambda () (diminish 'eldoc-mode)))
+#+end_src
+
 * Basic Configuration
 
 ** Making Emacs write auxiliary files elsewhere
@@ -91,13 +102,13 @@
   (defconst jess/auto-save-directory
     (expand-file-name "auto-save" jess/aux-directory))
   (make-directory jess/auto-save-directory 'parents)
-  
+
   (defconst jess/lock-directory
     (expand-file-name "lock" jess/aux-directory))
   (make-directory jess/lock-directory 'parents)
 
   (defconst jess/custom-file
-    (expand-file-name "custom.el" temporary-file-directory))  
+    (expand-file-name "custom.el" temporary-file-directory))
 #+end_src
 
 *** Backup files
@@ -133,10 +144,10 @@
 *** Custom file
 
 #+begin_src emacs-lisp
-  (add-hook 'elpaca-after-init-hook
-	    (lambda () (load jess/custom-file 'noerror)))
+  (custom-set-variables '(custom-file jess/custom-file))
+  (load jess/custom-file 'noerror)
   (add-hook 'kill-emacs-query-functions
-	      'custom-prompt-customize-unsaved-options)
+	    'custom-prompt-customize-unsaved-options)
 #+end_src
 
 ** Modifier keys
@@ -166,6 +177,7 @@
    '(global-hl-line-mode t)
    '(global-visual-line-mode t)
    '(global-display-line-numbers-mode t)
+   '(line-number-mode nil) ;; disable its mode line lighter
    '(scroll-margin 32)
    '(scroll-preserve-screen-position t)
    '(scroll-conservatively 101))
@@ -175,6 +187,18 @@
   (use-package ef-themes
     :custom (ef-themes-region '(no-extend))
     :config (load-theme 'ef-summer t))
+#+end_src
+
+** Minibuffer configurations
+
+#+begin_src emacs-lisp
+  (defconst jess/minibuffer-prompt-properties
+    (cl-list* 'cursor-intangible t
+	      (custom--standard-value 'minibuffer-prompt-properties)))
+  (custom-set-variables
+   '(minibuffer-prompt-properties jess/minibuffer-prompt-properties)
+   '(read-extended-command-predicate 'command-completion-default-include-p)
+   '(enable-recursive-minibuffers t))
 #+end_src
 
 ** Save recent editing record
@@ -228,6 +252,13 @@
     :custom (winner-mode t))
 #+end_src
 
+*** Minibuffer history
+
+#+begin_src emacs-lisp
+  (use-feature savehist
+    :custom (savehist-mode t))
+#+end_src
+
 ** Utilities
 
 *** Some useful key bindings
@@ -243,6 +274,7 @@
 
 #+begin_src emacs-lisp
   (use-package which-key
+    :diminish
     :custom
     (which-key-side-window-location 'right)
     (which-key-max-description-length 36)
@@ -254,6 +286,7 @@
 
 #+begin_src emacs-lisp
   (use-package company
+    :diminish
     :custom
     (global-company-mode t))
 #+end_src
@@ -262,6 +295,7 @@
 
 #+begin_src emacs-lisp
   (use-package beacon
+    :diminish
     :custom
     (beacon-size 8)
     (beacon-color "#cf0090")
@@ -312,13 +346,178 @@
     (vterm-buffer-name-string "vterm %s")
     (vterm-eval-cmds
      (let* ((cmds (custom--standard-value 'vterm-eval-cmds)))
-       (add-to-list 'cmds ("update-pwd" jess/update-pwd)))))
+       (add-to-list 'cmds '("update-pwd" jess/update-pwd)))))
 #+end_src
 
 *** Git client - Magit
 
 #+begin_src emacs-lisp
   (use-package magit)
+#+end_src
+
+*** Vertico
+
+#+begin_src emacs-lisp
+  (use-package vertico
+    :custom
+    (vertico-count 32)
+    :hook
+    (elpaca-after-init . vertico-mode))
+#+end_src
+
+*** Orderless
+
+#+begin_src emacs-lisp
+  ;; Optionally use the `orderless' completion style.
+  (use-package orderless
+    :hook
+    (elpaca-after-init . (lambda ()
+			   (setq completion-styles '(orderless basic)
+				 completion-category-defaults nil
+				 completion-category-overrides '((file (styles partial-completion))))))
+    ;; Configure a custom style dispatcher (see the Consult wiki)
+    ;; (setq orderless-style-dispatchers '(+orderless-consult-dispatch orderless-affix-dispatch)
+    ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+    )
+#+end_src
+
+*** Marginalia
+
+#+begin_src emacs-lisp
+  ;; Enable rich annotations using the Marginalia package
+  (use-package marginalia
+    ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
+    ;; available in the *Completions* buffer, add it to the
+    ;; `completion-list-mode-map'.
+    :bind (:map minibuffer-local-map
+	   ("M-A" . marginalia-cycle))
+
+    ;; The :init section is always executed.
+    :hook
+
+    ;; Marginalia must be actived in the :init section of use-package such that
+    ;; the mode gets enabled right away. Note that this forces loading the
+    ;; package.
+    (elpaca-after-init . marginalia-mode))
+#+end_src
+
+*** Consult
+
+#+begin_src emacs-lisp
+  (use-package consult
+    :custom
+    (xref-show-xrefs-function consult-xref)
+    (xref-show-definitions-function consult-xref)
+    :hook
+    (completion-list-mode . consult-preview-at-point-mode)
+    ;; Replace bindings. Lazily loaded due by `use-package'.
+    :bind
+    (;; C-c bindings in `mode-specific-map'
+     ("C-c M-x" . consult-mode-command)
+     ("C-c h" . consult-history)
+     ("C-c k" . consult-kmacro)
+     ("C-c m" . consult-man)
+     ("C-c i" . consult-info)
+     ([remap Info-search] . consult-info)
+     ;; C-x bindings in `ctl-x-map'
+     ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+     ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+     ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+     ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+     ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+     ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+     ;; Other custom bindings
+     ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+     ;; M-g bindings in `goto-map'
+     ("M-g e" . consult-compile-error)
+     ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+     ("M-g g" . consult-goto-line)             ;; orig. goto-line
+     ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+     ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+     ("M-g m" . consult-mark)
+     ("M-g k" . consult-global-mark)
+     ("M-g i" . consult-imenu)
+     ("M-g I" . consult-imenu-multi)
+     ;; M-s bindings in `search-map'
+     ("M-s d" . consult-find)
+     ("M-s D" . consult-locate)
+     ("M-s g" . consult-grep)
+     ("M-s G" . consult-git-grep)
+     ("M-s r" . consult-ripgrep)
+     ("M-s l" . consult-line)
+     ("M-s L" . consult-line-multi)
+     ("M-s k" . consult-keep-lines)
+     ("M-s u" . consult-focus-lines)
+     ;; Isearch integration
+     ("M-s e" . consult-isearch-history)
+     :map isearch-mode-map
+     ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+     ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+     ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+     ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
+     ;; Minibuffer history
+     :map minibuffer-local-map
+     ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+     ("M-r" . consult-history))                ;; orig. previous-matching-history-element
+    )
+#+end_src
+
+*** Embark
+
+#+begin_src emacs-lisp
+  (use-package embark
+    :bind
+    (("C-." . embark-act)         ;; pick some comfortable binding
+     ("C-;" . embark-dwim)        ;; good alternative: M-.
+     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+    :hook
+    (elpaca-after-init . (lambda ()
+			   ;; Optionally replace the key help with a
+			   ;; completing-read interface
+			   (setq prefix-help-command
+				 #'embark-prefix-help-command)
+			   ;; Show the Embark target at point via Eldoc.
+			   ;; You may adjust the Eldoc strategy, if you
+			   ;; want to see the documentation from
+			   ;; multiple providers.
+			   (add-hook 'eldoc-documentation-functions
+				     #'embark-eldoc-first-target)
+			   (setq eldoc-documentation-strategy
+				 #'eldoc-documentation-compose-eagerly)))
+    :config
+    ;; Hide the mode line of the Embark live/completions buffers
+    (add-to-list 'display-buffer-alist
+		 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+		   nil
+		   (window-parameters (mode-line-format . none)))))
+
+  ;; Consult users will also want the embark-consult package.
+  (use-package embark-consult
+    :after
+    consult
+    :hook
+    (embark-collect-mode . consult-preview-at-point-mode))
+#+end_src
+
+** Misc
+
+#+begin_src emacs-lisp
+  (defalias 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+#+begin_src emacs-lisp
+  (custom-set-variables
+   '(delete-by-moving-to-trash t))
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package smartparens
+    :diminish
+    :hook
+    (prog-mode . smartparens-mode)
+    (elpaca-after-init . (lambda ()
+			   (require 'smartparens-config))))
 #+end_src
 
 ** Window and buffer management
@@ -329,17 +528,18 @@
   (defconst jess/persp-state-file
     (expand-file-name "persp-state" jess/aux-directory))
   (use-package perspective
-    :after counsel
+    :after consult
     :bind
     ("C-x C-b" . persp-list-buffers)
-    ("C-x b"   . persp-counsel-switch-buffer)
     :custom
     (persp-mode-prefix-key (kbd "s-p"))
     (persp-state-default-file jess/persp-state-file)
     :hook
     (elpaca-after-init . persp-mode)
     :config
-    (run-at-time nil (* 3 60) 'persp-state-save))
+    (run-at-time nil (* 3 60) 'persp-state-save)
+    (consult-customize consult--source-buffer :hidden t :default nil)
+    (add-to-list 'consult-buffer-sources persp-consult-source))
 #+end_src
 
 *** Window switch key bindings
@@ -350,9 +550,9 @@
 		  (lambda () (interactive) (other-window -1)))
 #+end_src
 
-* Dired
+** Dired
 
-** External =ls= program
+*** External =ls= program
 
 #+begin_src emacs-lisp
   (setq insert-directory-program
@@ -363,7 +563,7 @@
 	 '(dired-listing-switches ls-opts))))
 #+end_src
 
-** Reusing Dired buffer
+*** Reusing Dired buffer
 
 #+begin_src emacs-lisp
   (put 'dired-find-alternate-file 'disabled nil)
@@ -378,7 +578,7 @@
     (find-alternate-file ".."))
 #+end_src
 
-** Prefixing Dired buffers
+*** Prefixing Dired buffers
 
 #+begin_src emacs-lisp
   (defun jess/prefix-dired-buffers ()
@@ -386,7 +586,7 @@
 		    (format "dired %s" dired-directory))))
 #+end_src
 
-** Hide unintersting files
+*** Hide unintersting files
 
 #+begin_src emacs-lisp
   (defconst jess/dired-omit-files
@@ -396,7 +596,7 @@
 	    "\\|\.CFUserTextEncoding")))
 #+end_src
 
-** Applying configurations
+*** Applying configurations
 
 #+begin_src emacs-lisp
   (use-feature dired
@@ -415,30 +615,6 @@
     (dired-omit-files jess/dired-omit-files)
     :hook
     (dired-mode . dired-omit-mode))
-#+end_src
-
-* Completion Framework
-
-#+begin_src emacs-lisp
-  (use-package counsel
-    :custom
-    (ivy-height 16)
-    (ivy-use-virtual-buffers t)
-    (ivy-count-format "(%d/%d) ")
-    (enable-recursive-minibuffers t)
-    (ivy-initial-inputs-alist nil)
-    (ivy-mode t)
-    :bind
-    ("C-s"     . swiper-isearch)
-    ("M-x"     . counsel-M-x)
-    ("C-x C-f" . counsel-find-file)
-    ("M-y"     . counsel-yank-pop)
-    ("C-h f"   . counsel-describe-function)
-    ("C-h v"   . counsel-describe-variable)
-    :config
-    (setq ivy-re-builders-alist
-	  '((swiper-isearch . ivy--regex-plus)
-	    (t              . ivy--regex-fuzzy))))
 #+end_src
 
 * Manipulate Different Types of Files
