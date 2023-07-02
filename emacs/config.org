@@ -211,7 +211,7 @@
    '(recentf-max-saved-items 256)
    '(recentf-auto-cleanup 'never)
    '(recentf-mode t))
-  (global-set-key (kbd "s-r") 'recentf-open-files)
+  (global-set-key (kbd "C-r") 'recentf-open-files)
   (run-at-time nil (* 3 60) 'recentf-save-list)
 #+end_src
 
@@ -317,11 +317,23 @@
 *** Navigating around visible texts
 
 #+begin_src emacs-lisp
+  (defun jess/avy-goto-next-char (char &optional arg)
+    "Jump to the next position of currently visible CHAR.
+  The window scope is determined by `avy-all-windows' (ARG negates it)."
+    (interactive (list (read-char "char: " t)
+		       current-prefix-arg))
+    (progn (require 'avy)
+	   (avy-with avy-goto-char
+		     (avy-jump
+		      (if (= 13 char) "\n"
+			(regexp-quote (string char)))
+		      :window-flip arg))
+	   (forward-char)))
   (use-package avy
     :bind
     ("C-." . avy-goto-char-timer)
-    ("C-;" . avy-goto-char)
-    ("C-:" . avy-goto-char-in-line))
+    ("s-," . avy-goto-char)
+    ("s-." . jess/avy-goto-next-char))
 #+end_src
 
 *** Terminal emulator
@@ -414,14 +426,14 @@
     :bind
     (;; C-c bindings in `mode-specific-map'
      ("C-c M-x" . consult-mode-command)
-     ("C-c h" . consult-history)
-     ("C-c k" . consult-kmacro)
-     ("C-c m" . consult-man)
-     ("C-c i" . consult-info)
+     ("C-c h"   . consult-history)
+     ("C-c k"   . consult-kmacro)
+     ("C-c m"   . consult-man)
+     ("C-c i"   . consult-info)
      ([remap Info-search] . consult-info)
      ;; C-x bindings in `ctl-x-map'
      ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-     ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+     ("C-x b"   . consult-buffer)              ;; orig. switch-to-buffer
      ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
      ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
      ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
@@ -429,15 +441,15 @@
      ;; Other custom bindings
      ("M-y" . consult-yank-pop)                ;; orig. yank-pop
      ;; M-g bindings in `goto-map'
-     ("M-g e" . consult-compile-error)
-     ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
-     ("M-g g" . consult-goto-line)             ;; orig. goto-line
+     ("M-g e"   . consult-compile-error)
+     ("M-g f"   . consult-flymake)             ;; Alternative: consult-flycheck
+     ("M-g g"   . consult-goto-line)           ;; orig. goto-line
      ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-     ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
-     ("M-g m" . consult-mark)
-     ("M-g k" . consult-global-mark)
-     ("M-g i" . consult-imenu)
-     ("M-g I" . consult-imenu-multi)
+     ("M-g o"   . consult-outline)             ;; Alternative: consult-org-heading
+     ("M-g m"   . consult-mark)
+     ("M-g k"   . consult-global-mark)
+     ("M-g i"   . consult-imenu)
+     ("M-g I"   . consult-imenu-multi)
      ;; M-s bindings in `search-map'
      ("M-s d" . consult-find)
      ("M-s D" . consult-locate)
@@ -448,10 +460,11 @@
      ("M-s L" . consult-line-multi)
      ("M-s k" . consult-keep-lines)
      ("M-s u" . consult-focus-lines)
+     ("C-s"   . consult-line)
      ;; Isearch integration
      ("M-s e" . consult-isearch-history)
      :map isearch-mode-map
-     ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+     ("M-e"   . consult-isearch-history)       ;; orig. isearch-edit-string
      ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
      ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
      ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
