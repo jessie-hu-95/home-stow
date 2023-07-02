@@ -4,6 +4,9 @@
 
 ** Bootstrap
 
+This is used to  set up and manage the Elpaca package  manager in Emacs.  Elpaca
+is a new Emacs package manager that builds packages asynchronously.
+
 #+begin_src emacs-lisp
   (defvar elpaca-installer-version 0.5)
   (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
@@ -45,17 +48,29 @@
 
 ** =use-package= support
 
+The first sexp  initializes the elpaca-use-package mode,  which provides support
+for the use-package macro in Elpaca. This means that whenever a package is added
+using Elpaca, it will also configure it to be used with the =use-package= macro.
+This  allows   for  easier   and  more   consistent  package   configuration  in
+Emacs.  =(elpaca-wait)=  This statement  ensures  that  all asynchronous  Elpaca
+package  operations  finish  before  continuing  with  the  rest  of  the  Emacs
+configuration.
+
 #+begin_src emacs-lisp
-  ;; Install use-package support
   (elpaca elpaca-use-package
-    ;; Enable :elpaca use-package keyword.
     (elpaca-use-package-mode)
-    ;; Assume :elpaca t unless otherwise specified.
     (setq elpaca-use-package-by-default t))
   (elpaca-wait)
 #+end_src
 
 ** =use-feature= macro
+
+This  macro, =use-feature=,  works like  =use-package= but  it accommodates  the
+asynchronous package  installation process facilitated  by Elpaca. It  creates a
+new  =use-package=  form  that  does not  use  Elpaca's  asynchronous  handling,
+ensuring  all  settings  and  configurations  of a  package  are  loaded  before
+use.  This  macro  is  useful  for   maintaining  a  synchronous  order  in  the
+configuration when required.
 
 #+begin_src emacs-lisp
   (defmacro use-feature (name &rest args)
@@ -69,6 +84,10 @@
 
 ** Load =exec-path= from shell
 
+This  snippet installs  and  initializes the  =exec-path-from-shell= package  on
+MacOS systems.  This package ensures that  Emacs uses the same  PATH environment
+variable as your shell.
+
 #+begin_src emacs-lisp
   (use-package exec-path-from-shell
     :if (eq system-type 'darwin)
@@ -77,6 +96,8 @@
 #+end_src
 
 ** Hide mode line lighter
+
+The =diminish= package is installed to hide or minimize minor mode indicators.
 
 #+begin_src emacs-lisp
   (use-package diminish)
@@ -90,6 +111,9 @@
 * Basic Configuration
 
 ** Making Emacs write auxiliary files elsewhere
+
+This  code  sets up  a  structured  directory  system  within the  user's  Emacs
+directory to organize backup, auto-save, and lock files:
 
 #+begin_src emacs-lisp
   (defconst jess/aux-directory
@@ -113,6 +137,12 @@
 
 *** Backup files
 
+This snippet customizes Emacs' backup settings:
+1. Backup files are directed to =jess/backup-directory=.
+2. Emacs is  set to backup by copying, automatically  delete older versions, and
+   version backups.
+3. It's configured to keep 64 latest and 32 oldest backup versions.
+
 #+begin_src emacs-lisp
   (custom-set-variables
    '(backup-directory-alist `((".*" . ,jess/backup-directory)))
@@ -125,6 +155,10 @@
 
 *** Auto-save files
 
+This  code  snippet  customizes  the  auto-save behavior  in  Emacs  by  setting
+=auto-save-interval=  to =32=  seconds  and =auto-save-file-name-transforms=  to
+specify the directory and naming pattern for auto-save files.
+
 #+begin_src emacs-lisp
   (custom-set-variables
    '(auto-save-interval 32)
@@ -135,6 +169,9 @@
 
 *** Lock files
 
+This  code snippet  customizes the  locking behavior  in Emacs  by specifying  a
+directory and naming pattern for lock files.
+
 #+begin_src emacs-lisp
   (custom-set-variables
    '(lock-file-name-transforms
@@ -142,6 +179,10 @@
 #+end_src
 
 *** Custom file
+
+This  code  snippet sets  up  the  Emacs  customizations  file and  handles  its
+loading. It  also adds a  hook to prompt the  user to customize  unsaved options
+before quitting Emacs.
 
 #+begin_src emacs-lisp
   (custom-set-variables '(custom-file jess/custom-file))
@@ -151,6 +192,9 @@
 #+end_src
 
 ** Modifier keys
+
+This snippet customizes  Emacs settings specifically for macOS  systems.  If the
+system type is 'darwin' (indicating macOS).
 
 #+begin_src emacs-lisp
   (if (eq system-type 'darwin)
@@ -163,6 +207,9 @@
 
 ** Key binding to load init file
 
+This  keybinding allows  you to  quickly reload  your Emacs  configuration while
+working within Emacs itself.
+
 #+begin_src emacs-lisp
   (global-set-key (kbd "s-i")
 		  (lambda () (interactive) (load-file user-init-file)))
@@ -170,18 +217,45 @@
 
 ** UI configurations
 
+This snippet customizes various visual and scrolling settings in Emacs:
+
 #+begin_src emacs-lisp
   (custom-set-variables
-   '(scroll-bar-mode nil)
-   '(tool-bar-mode nil)
-   '(global-hl-line-mode t)
-   '(global-visual-line-mode t)
-   '(global-display-line-numbers-mode t)
-   '(line-number-mode nil) ;; disable its mode line lighter
-   '(scroll-margin 32)
-   '(scroll-preserve-screen-position t)
-   '(scroll-conservatively 101))
+     ;; Disable scroll bar
+     '(scroll-bar-mode nil)
+
+     ;; Disable tool bar
+     '(tool-bar-mode nil)
+
+     ;; Enable highlighting of the current line
+     '(global-hl-line-mode t)
+
+     ;; Enable visual line mode for wrapping long lines
+     '(global-visual-line-mode t)
+
+     ;; Enable line number display in all buffers
+     '(global-display-line-numbers-mode t)
+
+     ;; Disable mode line lighter for line numbers
+     '(line-number-mode nil)
+
+     ;; Specify the  number of lines  to keep visible  above and below  the cursor
+     ;; when scrolling
+     '(scroll-margin 32)
+
+     ;; Preserve cursor position when scrolling
+     '(scroll-preserve-screen-position t)
+
+     ;; Specify the threshold for scrolling the window by lines instead of pixels
+     '(scroll-conservatively 101)
+
+     ;; Set default frame attributes
+     '(default-frame-alist '((width . 88) (height . 24))))
 #+end_src
+
+The =ef-themes=  package provides a collection  of custom Emacs themes  that you
+can use  to customize the visual  appearance of your Emacs  editor. These themes
+offer different color schemes and styles to enhance your coding experience.
 
 #+begin_src emacs-lisp
   (use-package ef-themes
@@ -190,6 +264,11 @@
 #+end_src
 
 ** Minibuffer configurations
+
+This code snippet customizes Emacs'  minibuffer settings by defining and setting
+properties for the  minibuffer prompt using =jess/minibuffer-prompt-properties=.
+It  also  specifies  the  command completion  predicate  and  enables  recursive
+minibuffers.
 
 #+begin_src emacs-lisp
   (defconst jess/minibuffer-prompt-properties
@@ -205,6 +284,14 @@
 
 *** Recent opened files
 
+This code  configures the  recentf mode  in Emacs by  setting variables  such as
+=recentf-max-menu-items= (maximum number of recent files displayed in the menu),
+=recentf-max-saved-items= (maximum  number of recent  files saved in  the list),
+=recentf-auto-cleanup= (prevents  automatic deletion of non-existent  files from
+the   recentf   list),   and    enabling   =recentf-mode=.    Furthermore,   the
+=recentf-save-list= function is scheduled to run every 3 minutes to periodically
+save the recentf list.
+
 #+begin_src emacs-lisp
   (custom-set-variables
    '(recentf-max-menu-items 64)
@@ -217,6 +304,10 @@
 
 *** Save point places
 
+The save-place feature in Emacs remembers the location of the last visited point
+in  each file,  allowing  you to  resume  editing from  the  same position  when
+reopening the file.
+
 #+begin_src emacs-lisp
   (custom-set-variables
    '(save-place-limit 1024)
@@ -224,6 +315,9 @@
 #+end_src
 
 *** Auto revert buffers
+
+These  settings ensure  that buffers  are automatically  updated to  reflect any
+changes made to their associated files.
 
 #+begin_src emacs-lisp
   (custom-set-variables
@@ -233,6 +327,9 @@
 #+end_src
 
 *** Undo history
+
+This configuration  allows you to use  the =undo-tree= package for  managing and
+visualizing undo/redo history in Emacs.
 
 #+begin_src emacs-lisp
   (defconst jess/undo-tree-directory
@@ -247,12 +344,20 @@
 
 *** Window layout history
 
+The =winner=  package (built-in) provides  the ability  to undo and  redo window
+configurations in Emacs, allowing you  to easily switch between previously saved
+window arrangements.
+
 #+begin_src emacs-lisp
   (use-feature winner
     :custom (winner-mode t))
 #+end_src
 
 *** Minibuffer history
+
+The =savehist= package  allows Emacs to save and restore  various history lists,
+such as  command history, minibuffer  history, and search history,  across Emacs
+sessions.
 
 #+begin_src emacs-lisp
   (use-feature savehist
@@ -263,6 +368,9 @@
 
 *** Some useful key bindings
 
+This  code  snippet  configures  key  bindings  for  the  =forward-to-word=  and
+=backward-to-word= functions in Emacs.
+
 #+begin_src emacs-lisp
   (use-feature misc
     :bind
@@ -271,6 +379,10 @@
 #+end_src
 
 *** Which key
+
+The  =which-key=  package  provides  a helpful  popup  that  displays  available
+keybindings and  their associated commands  in Emacs, aiding in  discovering and
+remembering key combinations.
 
 #+begin_src emacs-lisp
   (use-package which-key
@@ -284,6 +396,9 @@
 
 *** Completion
 
+The =company= package provides auto-completion  capabilities in Emacs, making it
+easier to type and navigate code with suggestions and completions.
+
 #+begin_src emacs-lisp
   (use-package company
     :diminish
@@ -292,6 +407,10 @@
 #+end_src
 
 *** Never lose the point again
+
+The  =beacon=  package provides  a  visual  indicator  (a blinking  light)  that
+highlights the cursor position, making it  easier to locate and track the cursor
+as you navigate through the Emacs buffer.
 
 #+begin_src emacs-lisp
   (use-package beacon
@@ -304,6 +423,12 @@
     (beacon-mode t))
 #+end_src
 
+The =golden-ratio-scroll-screen=  package provides smooth scrolling  behavior in
+Emacs,  and  in  this  configuration,  it  highlights  the  current  line  while
+scrolling. The key bindings are remapped to use the =golden-ratio-scroll-screen=
+functions  for scrolling  up and  down, providing  a more  comfortable scrolling
+experience.
+
 #+begin_src emacs-lisp
   (use-package golden-ratio-scroll-screen
     :custom-face
@@ -315,6 +440,10 @@
 #+end_src
 
 *** Navigating around visible texts
+
+This function enhances navigation  in Emacs by providing a quick  way to jump to
+the next occurrence  of a character in  the visible portion of  the buffer using
+the =avy= package.
 
 #+begin_src emacs-lisp
   (defun jess/avy-goto-next-char (char &optional arg)
@@ -329,6 +458,12 @@
 			(regexp-quote (string char)))
 		      :window-flip arg))
 	   (forward-char)))
+#+end_src
+
+These key bindings  provide convenient shortcuts for using =avy=  to navigate to
+specific characters or locations in the buffer.
+
+#+begin_src emacs-lisp
   (use-package avy
     :bind
     ("C-." . avy-goto-char-timer)
@@ -338,12 +473,28 @@
 
 *** Terminal emulator
 
+By  using this  function, you  can easily  disable line  number display  and the
+highlighting of the current line in the buffer where it is called.
+
 #+begin_src emacs-lisp
   (defun jess/disable-line-num-and-hl ()
     (display-line-numbers-mode -1)
     (setq-local global-hl-line-mode nil))
+#+end_src
+
+By using  this function  and providing a  desired path as  an argument,  you can
+update  the current  working  directory (=default-directory=)  in  Emacs to  the
+specified path.
+
+#+begin_src emacs-lisp
   (defun jess/update-pwd (path)
     (setq default-directory path))
+#+end_src
+
+These configurations provide key bindings,  hooks, and customizations to enhance
+the functionality and behavior of the =vterm= package in Emacs.
+
+#+begin_src emacs-lisp
   (use-package vterm
     :bind
     (("s-t" . vterm)
@@ -363,11 +514,22 @@
 
 *** Git client - Magit
 
+Magit is  an Emacs package that  provides a powerful interface  for working with
+Git  repositories.  It  offers  commands  and features  to  perform various  Git
+operations  directly   within  Emacs,  such  as   staging  changes,  committing,
+branching, merging,  and interacting  with remote repositories.   Magit enhances
+productivity  and streamlines  Git  workflows,  making it  a  valuable tool  for
+managing version control in Emacs.
+
 #+begin_src emacs-lisp
   (use-package magit)
 #+end_src
 
 *** Vertico
+
+The =vertico= package  replaces the default Emacs minibuffer  completion with an
+enhanced interface. It  provides a vertical layout, allowing for  a more compact
+and efficient display of completion candidates.
 
 #+begin_src emacs-lisp
   (use-package vertico
@@ -379,41 +541,46 @@
 
 *** Orderless
 
+This code snippet configures the =orderless= package in Emacs by customizing the
+completion  settings. It  enables  =orderless= style  matching for  completions,
+disables default category settings for  completion, and overrides the completion
+style for  the =file=  category using  =partial-completion=.  This  improves the
+flexibility and effectiveness of Emacs completion.
+
 #+begin_src emacs-lisp
-  ;; Optionally use the `orderless' completion style.
   (use-package orderless
     :hook
-    (elpaca-after-init . (lambda ()
-			   (setq completion-styles '(orderless basic)
-				 completion-category-defaults nil
-				 completion-category-overrides '((file (styles partial-completion))))))
-    ;; Configure a custom style dispatcher (see the Consult wiki)
-    ;; (setq orderless-style-dispatchers '(+orderless-consult-dispatch orderless-affix-dispatch)
-    ;;       orderless-component-separator #'orderless-escapable-split-on-space)
-    )
+    (elpaca-after-init
+     . (lambda ()
+	 (setq completion-styles '(orderless basic)
+	       completion-category-defaults nil
+	       completion-category-overrides '((file (styles partial-completion)))))))
 #+end_src
 
 *** Marginalia
 
+This  code snippet  configures the  =marginalia=  package in  Emacs. It  enables
+=marginalia-mode= after  Emacs initialization  and binds  the =marginalia-cycle=
+command to the  key combination =M-A= in the  minibuffer.  =marginalia= enhances
+the  minibuffer  completion  interface  by  providing  helpful  annotations  for
+completion candidates.
+
 #+begin_src emacs-lisp
-  ;; Enable rich annotations using the Marginalia package
   (use-package marginalia
-    ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
-    ;; available in the *Completions* buffer, add it to the
-    ;; `completion-list-mode-map'.
-    :bind (:map minibuffer-local-map
-	   ("M-A" . marginalia-cycle))
-
-    ;; The :init section is always executed.
+    :bind
+    (:map minibuffer-local-map
+	  ("M-A" . marginalia-cycle))
     :hook
-
-    ;; Marginalia must be actived in the :init section of use-package such that
-    ;; the mode gets enabled right away. Note that this forces loading the
-    ;; package.
     (elpaca-after-init . marginalia-mode))
 #+end_src
 
 *** Consult
+
+This  code  snippet  configures  the  =consult= package  in  Emacs.   It  remaps
+keybindings and customizes various  functions to enhance completion, navigation,
+search,  and history  features.  =consult=  provides improved  functionality for
+commands such as switching buffers, searching, navigating to specific lines, and
+accessing history.
 
 #+begin_src emacs-lisp
   (use-package consult
@@ -477,14 +644,24 @@
 
 ** Misc
 
+This code  snippet creates an  alias =yes-or-no-p= for the  =y-or-n-p= function,
+allowing  you  to   use  a  shorter  and  more  intuitive   name  for  the  same
+functionality.
+
 #+begin_src emacs-lisp
   (defalias 'yes-or-no-p 'y-or-n-p)
 #+end_src
+
+This code snippet enables moving deleted files to the system's trash folder.
 
 #+begin_src emacs-lisp
   (custom-set-variables
    '(delete-by-moving-to-trash t))
 #+end_src
+
+This code  snippet configures  the =smartparens= package  in Emacs.   It enables
+=smartparens-mode= in  programming modes  and loads the  necessary configuration
+for =smartparens= after Emacs initialization.
 
 #+begin_src emacs-lisp
   (use-package smartparens
@@ -495,13 +672,37 @@
 			   (require 'smartparens-config))))
 #+end_src
 
+This code  snippet customizes  text formatting  settings in  Emacs. It  sets the
+=fill-column=   to  =80=,   =default-justification=  to   =full=,  and   enables
+=colon-double-space=. These  settings control line wrapping,  justification, and
+spacing around colons.
+
+#+begin_src emacs-lisp
+  (custom-set-variables
+   '(fill-column 80)
+   '(default-justification 'full)
+   '(colon-double-space t))
+#+end_src
+
 ** Window and buffer management
 
 *** Perspective
 
+The directory for =persp-state= file.
+
 #+begin_src emacs-lisp
   (defconst jess/persp-state-file
     (expand-file-name "persp-state" jess/aux-directory))
+#+end_src
+
+This code  snippet configures the  =perspective= package  in Emacs. It  sets key
+binding for =persp-list-buffers= command, customizes  the prefix key and default
+file  for  saving the  =perspective=  state,  enables =persp-mode=  after  Emacs
+initialization,   and   configures   periodic  saving   of   the   =perspective=
+state. Additionally, it integrates =perspective=  with the =consult= package for
+enhanced buffer selection.
+
+#+begin_src emacs-lisp
   (use-package perspective
     :bind
     ("C-x C-b" . persp-list-buffers)
@@ -520,6 +721,9 @@
 
 *** Window switch key bindings
 
+You can easily switch  between windows in Emacs using =M-o=  to move forward and
+=M-O= to move backward.
+
 #+begin_src emacs-lisp
   (global-set-key (kbd "M-o") 'other-window)
   (global-set-key (kbd "M-O")
@@ -529,6 +733,11 @@
 ** Dired
 
 *** External =ls= program
+
+This code  snippet configures the  behavior of  the directory listing  in Emacs'
+=dired= mode. It sets the =insert-directory-program= variable to the path of the
+=ls= command and  customizes the =dired-listing-switches= variable  based on the
+value of the =EMACS_LS_OPTS= environment variable, if available.
 
 #+begin_src emacs-lisp
   (setq insert-directory-program
@@ -541,20 +750,42 @@
 
 *** Reusing Dired buffer
 
+Defines the =dired-find-alternate-file= command as not disabled, allowing you to
+open a directory in =dired= mode without creating a new buffer.
+
 #+begin_src emacs-lisp
   (put 'dired-find-alternate-file 'disabled nil)
+#+end_src
+
+The  =jess/dired-find-file=   function  checks  if   the  selected  file   is  a
+directory. If it is, it  opens it with =dired-find-alternate-file=, which reuses
+the current buffer for  the new directory. If it is a regular  file, it opens it
+with =dired-find-file=, which creates a new buffer for the file.
+
+#+begin_src emacs-lisp
   (defun jess/dired-find-file ()
     (interactive)
     (let* ((filename (dired-get-filename)))
-			(if (file-directory-p filename)
-			    (dired-find-alternate-file)
-			  (dired-find-file))))
+      (if (file-directory-p filename)
+	  (dired-find-alternate-file)
+	(dired-find-file))))
+#+end_src
+
+The =jess/dired-goto-parent-directory=  function quickly moves up  to the parent
+directory in dired mode using the =find-alternate-file= command.
+
+#+begin_src emacs-lisp
   (defun jess/dired-goto-parent-directory ()
     (interactive)
     (find-alternate-file ".."))
 #+end_src
 
 *** Prefixing Dired buffers
+
+This code snippet defines the function =jess/prefix-dired-buffers= to prefix the
+names of =dired= buffers with the  directory name. It renames the current buffer
+by generating a new name using the  format ="dired %s"= followed by the value of
+=dired-directory=.
 
 #+begin_src emacs-lisp
   (defun jess/prefix-dired-buffers ()
@@ -563,6 +794,11 @@
 #+end_src
 
 *** Hide unintersting files
+
+This  code  snippet defines  the  constant  variable =jess/dired-omit-files=  to
+specify the  files to be omitted  in =dired= mode. It  concatenates the standard
+value  of   =dired-omit-files=  with   the  file  patterns   ="\.DS_Store"=  and
+="\.CFUserTextEncoding"=.
 
 #+begin_src emacs-lisp
   (defconst jess/dired-omit-files
@@ -574,6 +810,11 @@
 
 *** Applying configurations
 
+This   code  snippet   enhances  =dired=   mode   in  Emacs   by  applying   the
+=jess/prefix-dired-buffers= function  to prefix buffer names  with the directory
+name. It also  defines key bindings in =dired-mode-map= for  convenient file and
+directory navigation using =RET= and =^= keys.
+
 #+begin_src emacs-lisp
   (use-feature dired
     :hook
@@ -583,6 +824,10 @@
 	  ("RET" . jess/dired-find-file)
 	  ("^"   . jess/dired-goto-parent-directory)))
 #+end_src
+
+This  code snippet  enables file  omission in  =dired= mode  by customizing  the
+=dired-omit-files=  variable  and  activating =dired-omit-mode=.   It  uses  the
+=jess/dired-omit-files= value to specify the files to be omitted.
 
 #+begin_src emacs-lisp
   (use-feature dired-x
@@ -597,6 +842,9 @@
 
 ** Language server protocol - Eglot
 
+This  code  configures   the  =eglot=  package  in  Emacs   to  enable  extended
+cross-referencing support.
+
 #+begin_src emacs-lisp
   (use-package eglot
     :custom (eglot-extend-to-xref t))
@@ -606,6 +854,9 @@
 ** Configurations for each type of files
 
 *** Python
+
+This  code  configures  the  =pyvenv-auto= package  in  Emacs  to  automatically
+activate the appropriate virtual environment when entering =python-mode=.
 
 #+begin_src emacs-lisp
   (use-package pyvenv-auto
