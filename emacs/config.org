@@ -270,6 +270,16 @@
     (beacon-mode t))
 #+end_src
 
+#+begin_src emacs-lisp
+  (use-package golden-ratio-scroll-screen
+    :custom-face
+    (golden-ratio-scroll-highlight-line-face
+     ((t (:extend t :background "#cf0090" :foreground "white" :weight bold))))
+    :bind
+    ([remap scroll-up-command]   . golden-ratio-scroll-screen-up)
+    ([remap scroll-down-command] . golden-ratio-scroll-screen-down))
+#+end_src
+
 *** Navigating around visible texts
 
 #+begin_src emacs-lisp
