@@ -1,482 +1,338 @@
-#+TITLE: Jessie's Emacs Configuration
-#+AUTHOR: Jessie Hu
-#+EMAIL: jessie.hu.95@icloud.com
+#+title: Jessie's GNU Emacs Configuration
 
-* Contents
-:PROPERTIES:
-:TOC:      :include all :depth 2 :ignore this
-:END:
-:CONTENTS:
-- [[#configuration-for-vinilla-emacs][Configuration for vinilla Emacs]]
-  - [[#making-emacs-write-all-auxiliary-files-somewhere-else][Making Emacs write all auxiliary files somewhere else]]
-  - [[#saving-customizations-besides-init-file][Saving Customizations besides init file]]
-  - [[#load-the-init-file-quickly][Load the init file quickly]]
-  - [[#config-modifier-keys][Config modifier keys]]
-  - [[#improving-appearance][Improving appearance]]
-  - [[#better-scrolling-behavior][Better scrolling behavior]]
-  - [[#improving-editing-experience][Improving editing experience]]
-  - [[#dired-the-directory-editor][Dired, the directory editor]]
-- [[#enhance-editing-experience-with-third-party-packages][Enhance editing experience with third-party packages]]
-  - [[#prerequisites][Prerequisites]]
-  - [[#general-configs-for-all-text-editing-tasks][General configs for all text editing tasks]]
-  - [[#completion-frame-work---ivy-counsel-swiper][Completion frame work - Ivy, Counsel, Swiper]]
-  - [[#navigating-around-visible-texts][Navigating around visible texts]]
-  - [[#terminal-emulator---vterm][Terminal emulator - vterm]]
-  - [[#version-control-system-vcs---magit][Version control system (VCS) - Magit]]
-  - [[#language-server-protocol-lsp---eglot][Language Server Protocol (LSP) - Eglot]]
-  - [[#packages-for-each-language][Packages for each language]]
-- [[#org-mode][Org mode]]
-  - [[#show-org-mode-bullets-as-utf-8-characters][Show org-mode bullets as UTF-8 characters]]
-  - [[#generate-table-of-contents][Generate table of contents]]
-:END:
+* Package Manager - =elpaca=
 
-* Configuration for vinilla Emacs
-
-** Making Emacs write all auxiliary files somewhere else
-
-By default, Emacs may create many new files in the directory where
-file is edited. This may be inconvenient in some setups, so Emacs has
-mechanisms for changing the locations of all these files.
+** Bootstrap
 
 #+begin_src emacs-lisp
-  (defconst aux-directory
+  (defvar elpaca-installer-version 0.5)
+  (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+  (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+  (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+  (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+				:ref nil
+				:files (:defaults (:exclude "extensions"))
+				:build (:not elpaca--activate-package)))
+  (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+	 (build (expand-file-name "elpaca/" elpaca-builds-directory))
+	 (order (cdr elpaca-order))
+	 (default-directory repo))
+    (add-to-list 'load-path (if (file-exists-p build) build repo))
+    (unless (file-exists-p repo)
+      (make-directory repo t)
+      (when (< emacs-major-version 28) (require 'subr-x))
+      (condition-case-unless-debug err
+	  (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+		   ((zerop (call-process "git" nil buffer t "clone"
+					 (plist-get order :repo) repo)))
+		   ((zerop (call-process "git" nil buffer t "checkout"
+					 (or (plist-get order :ref) "--"))))
+		   (emacs (concat invocation-directory invocation-name))
+		   ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+					 "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+		   ((require 'elpaca))
+		   ((elpaca-generate-autoloads "elpaca" repo)))
+	      (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+	    (error "%s" (with-current-buffer buffer (buffer-string))))
+	((error) (warn "%s" err) (delete-directory repo 'recursive))))
+    (unless (require 'elpaca-autoloads nil t)
+      (require 'elpaca)
+      (elpaca-generate-autoloads "elpaca" repo)
+      (load "./elpaca-autoloads")))
+  (add-hook 'after-init-hook #'elpaca-process-queues)
+  (elpaca `(,@elpaca-order))
+#+end_src
+
+** =use-package= support
+
+#+begin_src emacs-lisp
+  ;; Install use-package support
+  (elpaca elpaca-use-package
+    ;; Enable :elpaca use-package keyword.
+    (elpaca-use-package-mode)
+    ;; Assume :elpaca t unless otherwise specified.
+    (setq elpaca-use-package-by-default t))
+  (elpaca-wait)
+#+end_src
+
+** =use-feature= macro
+
+#+begin_src emacs-lisp
+  (defmacro use-feature (name &rest args)
+    "Like `use-package' but accounting for asynchronous installation.
+    NAME and ARGS are in `use-package'."
+    (declare (indent defun))
+    `(use-package ,name
+       :elpaca nil
+       ,@args))
+#+end_src
+
+** Load =exec-path= from shell
+
+#+begin_src emacs-lisp
+  (use-package exec-path-from-shell
+    :if (eq system-type 'darwin)
+    :config (exec-path-from-shell-initialize))
+  (elpaca-wait)
+#+end_src
+
+* Basic Configuration
+
+** Making Emacs write auxiliary files elsewhere
+
+#+begin_src emacs-lisp
+  (defconst jess/aux-directory
     (expand-file-name "aux" user-emacs-directory))
+
+  (defconst jess/backup-directory
+    (expand-file-name "backup" jess/aux-directory))
+  (make-directory jess/backup-directory 'parents)
+
+  (defconst jess/auto-save-directory
+    (expand-file-name "auto-save" jess/aux-directory))
+  (make-directory jess/auto-save-directory 'parents)
+  
+  (defconst jess/lock-directory
+    (expand-file-name "lock" jess/aux-directory))
+  (make-directory jess/lock-directory 'parents)
+
+  (defconst jess/custom-file
+    (expand-file-name "custom.el" temporary-file-directory))  
 #+end_src
 
 *** Backup files
 
-Save backup files to =aux/backup=.
-
 #+begin_src emacs-lisp
-  (defconst backup-directory
-    (expand-file-name "backup" aux-directory))
-  (setq backup-directory-alist `((".*" . ,backup-directory)))
-  (setq backup-by-copying t)
-  (setq delete-old-versions t)
-  (setq kept-new-versions 64)
-  (setq kept-old-versions 32)
-  (setq version-control t)
+  (custom-set-variables
+   '(backup-directory-alist `((".*" . ,jess/backup-directory)))
+   '(backup-by-copying t)
+   '(delete-old-versions t)
+   '(kept-new-versions 64)
+   '(kept-old-versions 32)
+   '(version-control t))
 #+end_src
 
 *** Auto-save files
 
-Save auto-save files to =aux/auto-save=.
-
 #+begin_src emacs-lisp
-  (defconst auto-save-directory
-    (expand-file-name "auto-save" aux-directory))
-  (make-directory auto-save-directory t)
-  (setq auto-save-file-name-transforms
-	`(("\\`/.*/\\([^/]+\\)\\'"
-	   ,(concat auto-save-directory "/\\1") t)))
-  (setq auto-save-interval 32)
+  (custom-set-variables
+   '(auto-save-interval 32)
+   '(auto-save-file-name-transforms
+     `(("\\`/.*/\\([^/]+\\)\\'"
+	,(concat jess/auto-save-directory "/\\1") t))))
 #+end_src
 
 *** Lock files
 
-Save lock files to =aux/lock=.
-
 #+begin_src emacs-lisp
-  (defconst lock-directory
-    (expand-file-name "lock" aux-directory))
-  (setq lock-file-name-transforms
-	`(("\\`/.*/\\([^/]+\\)\\'"
-	   ,(concat lock-directory "/\\1") t)))
+  (custom-set-variables
+   '(lock-file-name-transforms
+     `(("\\`/.*/\\([^/]+\\)\\'" ,(concat jess/lock-directory "/\\1") t))))
 #+end_src
 
-** Saving Customizations besides init file
-
-Save customization file to =custom.el= in
-=user-emacs-directory=. Suppress error reporting if this file doesn’t
-exist by a non-nil second arg =t=.
+*** Custom file
 
 #+begin_src emacs-lisp
-  (defconst custom-file
-    (expand-file-name "custom.el" user-emacs-directory))
-  (load custom-file t)
-#+end_src
-
-Let Emacs prompts about unsaved customizations at termination time.
-
-#+begin_src emacs-lisp
+  (add-hook 'elpaca-after-init-hook
+	    (lambda () (load jess/custom-file 'noerror)))
   (add-hook 'kill-emacs-query-functions
-	    'custom-prompt-customize-unsaved-options)
+	      'custom-prompt-customize-unsaved-options)
 #+end_src
 
-** Load the init file quickly
+** Modifier keys
 
 #+begin_src emacs-lisp
-  (defun load-init-file ()
-    (interactive) (load-file user-init-file))
-  (global-set-key (kbd "s-i") 'load-init-file)
+  (if (eq system-type 'darwin)
+    (custom-set-variables
+     '(mac-pass-command-to-system nil)
+     '(mac-pass-control-to-system nil)
+     '(mac-command-modifier 'super)
+     '(mac-right-command-modifier 'meta)))
 #+end_src
 
-** Config modifier keys
-
-For macOS, prevent passing command and control keys to system Toolbox.
+** Key binding to load init file
 
 #+begin_src emacs-lisp
-  (when (eq system-type 'darwin)
-    (setq mac-pass-command-to-system nil)
-    (setq mac-pass-control-to-system nil))
+  (global-set-key (kbd "s-i")
+		  (lambda () (interactive) (load-file user-init-file)))
 #+end_src
 
-Use left and right command key as =super= and =meta= keys
-respectively.
+** UI configurations
 
 #+begin_src emacs-lisp
-  (when (eq system-type 'darwin)
-    (setq mac-command-modifier 'super)
-    (setq mac-right-command-modifier 'meta))
+  (custom-set-variables
+   '(scroll-bar-mode nil)
+   '(tool-bar-mode nil)
+   '(global-hl-line-mode t)
+   '(global-visual-line-mode t)
+   '(global-display-line-numbers-mode t)
+   '(scroll-margin 32)
+   '(scroll-preserve-screen-position t)
+   '(scroll-conservatively 101))
 #+end_src
-
-Additionally, =C-M-d= is bound to systemwide searching. To disable it,
-run the following command from the shell.
-
-#+begin_src shell
-  defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys \
-	   -dict-add 70 '<dict><key>enabled</key><false/></dict>'
-#+end_src
-
-** Improving appearance
-
-Set font size and line spacing:
-
-#+begin_src emacs-lisp
-  (set-face-attribute 'default nil :height 130)
-#+end_src
-
-Disable scroll bar and tool bar.
-
-#+begin_src emacs-lisp
-  (scroll-bar-mode -1)
-  (tool-bar-mode -1)
-#+end_src
-
-Enable visual line, line number display and highlight current line.
-
-#+begin_src emacs-lisp
-  (global-display-line-numbers-mode)
-  (global-visual-line-mode)
-  (global-hl-line-mode)
-#+end_src
-
-** Better scrolling behavior
-
-Keep point away from the margin at the top and bottom of a window.
-
-#+begin_src emacs-lisp
-  (setq scroll-margin 32)
-#+end_src
-
-When using =C-v= and =M-v= to scroll up and down, the point jumps to
-the center of a window. To disable this feature,
-
-#+begin_src emacs-lisp
-  (setq scroll-preserve-screen-position t)
-#+end_src
-
-If point moves off-screen, redisplay will scroll by up to
-=scroll-conservatively= lines in order to bring point just barely onto
-the screen again. If the value is greater than 100, redisplay will
-never recenter point, but will always scroll just enough text to bring
-point into view, even if you move far away.
-
-#+begin_src emacs-lisp
-  (setq scroll-conservatively 101)
-#+end_src
-
-** Improving editing experience
-
-Remember recent visited files.
-
-#+begin_src emacs-lisp
-  (require 'recentf)
-  (recentf-mode)
-  (setq recentf-max-menu-items 64)
-  (setq recentf-max-saved-items 256)
-  (global-set-key (kbd "C-x C-r") 'recentf-open-files)
-#+end_src
-
-By default, =recentf= saves the list of recent files on exiting
-Emacs. If Emacs exits abruptly for some reason the recent file list
-will be lost. To call `recentf-save-list` periodically, e.g. every
-three minutes:
-
-#+begin_src emacs-lisp
-  (run-at-time nil (* 3 60) 'recentf-save-list)
-#+end_src
-
-Remember point position for each buffer.
-
-#+begin_src emacs-lisp
-  (require 'saveplace)
-  (save-place-mode)
-  (setq save-place-limit 1024)
-  (setq save-place-version-control 'nospecial)
-#+end_src
-
-Update buffer contents automatically.
-
-#+begin_src emacs-lisp
-  (global-auto-revert-mode)
-  (setq auto-revert-interval 1)
-#+end_src
-
-Enlarge kill ring size.
-
-#+begin_src emacs-lisp
-  (setq kill-ring-max 512)
-#+end_src
-
-Let =M-F= and =M-B= behave like Vim's =w= and =b= keys in normal mode.
-
-#+begin_src emacs-lisp
-  (require 'misc)
-  (global-set-key (kbd "M-F") 'forward-to-word)
-  (global-set-key (kbd "M-B") 'backward-to-word)
-#+end_src
-
-** Dired, the directory editor
-
-Dired makes an Emacs buffer containing a listing of a directory, and
-optionally some of its subdirectories as well.
-
-*** Use external =ls= implementation
-
-Tell Dired to use external =ls= program. The last line will try to get
-an environment variable =LA_OPTS= to use as =dired-listing-switches=,
-if the variable not defined, leave it unchanged.
-
-#+begin_src emacs-lisp
-  (setq ls-lisp-use-insert-directory-program t)
-  (setq insert-directory-program
-	(shell-command-to-string "which ls | tr -d '\n'"))
-  (let* ((ls-opts (getenv "LA_OPTS")))
-    (if ls-opts (setq dired-listing-switches ls-opts)))
-#+end_src
-
-*** Reuse directory buffer
-
-In Dired, when a directory chosen to visit, it is normally visited in
-a new buffer – the Dired buffer chosen it in is not deleted.  There is
-a command =dired-find-alternate-file= replacing the current Dired
-buffer with another buffer (it kills the current buffer).  The
-following code enables this command and binds =RET= to a lambda
-function, which invokes =dired-find-alternate-file= if the file is a
-directory, invokes =dired-find-file= if not.
-
-#+begin_src emacs-lisp
-  (put 'dired-find-alternate-file 'disabled nil)
-  (with-eval-after-load 'dired
-    (define-key dired-mode-map
-      (kbd "RET") (lambda ()
-		    (interactive)
-		    (let* ((filename (dired-get-filename)))
-		      (if (file-directory-p filename)
-			  (dired-find-alternate-file)
-			(dired-find-file))))))
-#+end_src
-
-In any case, the approach of just using =dired-find-alternate-file=
-does not help with mouse clicks to visit a file or directory. This
-command also does not help when using =^= to move up to the parent
-directory. To kill the current directory (the child) when using =^=,
-
-#+begin_src emacs-lisp
-  (with-eval-after-load 'dired
-    (add-hook 'dired-mode-hook
-	      (lambda ()
-		(define-key dired-mode-map (kbd "^")
-		  (lambda ()
-		    (interactive) (find-alternate-file ".."))))))
-#+end_src
-
-Now, one Dired buffer would be always reused and not closed when open
-a file.
-
-*** Prefixing Dired buffers
-
-#+begin_src emacs-lisp
-  (add-hook 'dired-mode-hook
-	    (lambda ()
-	      (rename-buffer
-	       (generate-new-buffer-name
-		(format "dired %s" dired-directory)))))
-#+end_src
-
-# *** Start up with Dired
-
-# #+begin_src emacs-lisp
-#   (setq initial-buffer-choice (expand-file-name "~/repos"))
-# #+end_src
-
-*** Hide uninteresting files
-
-#+begin_src emacs-lisp
-  (with-eval-after-load 'dired
-    (require 'dired-x))
-  (add-hook 'dired-mode-hook
-	    (lambda ()
-	      (progn
-		(setq dired-omit-files
-		      (concat dired-omit-files "\\|\.DS_Store"))
-		(setq dired-omit-files
-		      (concat dired-omit-files "\\|\.CFUserTextEncoding"))
-		(dired-omit-mode))))
-#+end_src
-
-* Enhance editing experience with third-party packages
-
-** Prerequisites
-
-*** Set =$PATH= and =exec-path=
-
-Some packages need some build tools available in user's shell =PATH=
-environment variable.  Set up Emacs' =exec-path= and =PATH=
-environment variable to match that used by the user's shell. This is
-particularly useful under Mac OS X and macOS, where GUI apps are not
-started from a shell.
-
-#+begin_src emacs-lisp
-  (defun set-exec-path-from-shell-PATH ()
-    (interactive)
-    (let* ((login-path
-	    (shell-command-to-string "$SHELL --login -c 'echo $PATH'"))
-	   (path-from-shell
-	    (replace-regexp-in-string "[ \t\n]*$" "" login-path)))
-      (setenv "PATH" path-from-shell)
-      (setq exec-path (split-string path-from-shell path-separator))))
-#+end_src
-
-Invoke this function on macOS:
-
-#+begin_src emacs-lisp
-  (when (eq system-type 'darwin)
-    (set-exec-path-from-shell-PATH))
-#+end_src
-
-*** Bootstrap the =use-package= macro
-
-The =use-package= macro allows one to isolate package configuration in
-the init file in a way that is both performance-oriented and, well,
-tidy.
-
-First, add Melpa to =package-archives=:
-
-#+begin_src emacs-lisp
-  (require 'package)
-  (add-to-list 'package-archives
-	       '("melpa" . "https://melpa.org/packages/"))
-#+end_src
-
-Install =use-package= unless it exists.
-
-#+begin_src emacs-lisp
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
-#+end_src
-
-Load a good-looking theme:
 
 #+begin_src emacs-lisp
   (use-package ef-themes
-    :ensure t
     :custom (ef-themes-region '(no-extend))
     :config (load-theme 'ef-summer t))
 #+end_src
 
-** General configs for all text editing tasks
+** Save recent editing record
 
-*** Hints for prefixed key bindings
+*** Recent opened files
 
-=which-key= is a minor mode for Emacs that displays the key bindings
-following your currently entered incomplete command (a prefix) in a
-popup.
+#+begin_src emacs-lisp
+  (custom-set-variables
+   '(recentf-max-menu-items 64)
+   '(recentf-max-saved-items 256)
+   '(recentf-auto-cleanup 'never)
+   '(recentf-mode t))
+  (global-set-key (kbd "s-r") 'recentf-open-files)
+  (run-at-time nil (* 3 60) 'recentf-save-list)
+#+end_src
+
+*** Save point places
+
+#+begin_src emacs-lisp
+  (custom-set-variables
+   '(save-place-limit 1024)
+   '(save-place-mode t))
+#+end_src
+
+*** Auto revert buffers
+
+#+begin_src emacs-lisp
+  (custom-set-variables
+   '(auto-revert-interval 0.5)
+   '(global-auto-revert-non-file-buffers t)
+   '(global-auto-revert-mode t))
+#+end_src
+
+*** Undo history
+
+#+begin_src emacs-lisp
+  (defconst jess/undo-tree-directory
+    (expand-file-name "undo-tree" jess/aux-directory))
+  (use-package undo-tree
+    :custom
+    (undo-tree-history-directory-alist
+     `((".*" . ,jess/undo-tree-directory)))
+    :config
+    (undo-tree-mode))
+#+end_src
+
+*** Window layout history
+
+#+begin_src emacs-lisp
+  (use-feature winner
+    :custom (winner-mode t))
+#+end_src
+
+** Utilities
+
+*** Some useful key bindings
+
+#+begin_src emacs-lisp
+  (use-feature misc
+    :bind
+    ("M-F" . forward-to-word)
+    ("M-B" . backward-to-word))
+#+end_src
+
+*** Which key
 
 #+begin_src emacs-lisp
   (use-package which-key
-    :ensure t
-    :config (which-key-mode))
+    :custom
+    (which-key-side-window-location 'right)
+    (which-key-max-description-length 36)
+    (which-key-max-display-columns 1)
+    (which-key-mode t))
 #+end_src
 
-*** Basic completion settings
-
-Company is a text completion framework for Emacs. The name stands for
-"complete anything". It uses pluggable back-ends and front-ends to
-retrieve and display completion candidates.
+*** Completion
 
 #+begin_src emacs-lisp
   (use-package company
-    :ensure t
-    :config (global-company-mode))
+    :custom
+    (global-company-mode t))
 #+end_src
 
 *** Never lose the point again
 
-=beacon= is a global minor-mode. Whenever the window scrolls a light will
-shine on top of the point so we know where it is.
-
 #+begin_src emacs-lisp
   (use-package beacon
-    :ensure t
-    :custom ((beacon-size 8)
-	     (beacon-color "#cf0090")
-	     (beacon-blink-delay 0.1)
-	     (beacon-blink-duration 0.5))
-    :config (beacon-mode))
+    :custom
+    (beacon-size 8)
+    (beacon-color "#cf0090")
+    (beacon-blink-delay 0.1)
+    (beacon-blink-duration 0.3)
+    (beacon-mode t))
 #+end_src
 
-Scroll screen down or up, and highlight current line before or after
-scrolling via =golden-ratio-scroll-screen=. Note that this package
-does provide functions for =scroll-other-window=.
+*** Navigating around visible texts
 
 #+begin_src emacs-lisp
-  (use-package golden-ratio-scroll-screen
-    :ensure t
-    :custom-face
-    (golden-ratio-scroll-highlight-line-face
-     ((t (:extend t :background "#cf0090" :foreground "white" :weight bold))))
-    :bind (([remap scroll-up-command]   . golden-ratio-scroll-screen-up)
-	   ([remap scroll-down-command] . golden-ratio-scroll-screen-down)))
+  (use-package avy
+    :bind
+    ("C-." . avy-goto-char-timer)
+    ("C-:" . avy-goto-char-in-line)
+    ("C-;" . avy-goto-char))
 #+end_src
 
-*** Recording undo history
-
-The =undo-tree-mode= provided by this package replaces Emacs' undo
-system with a system that treats undo history as what it is: a
-branching tree of changes. Enable =undo-tree-mode= globally and save
-undo-tree files into =aux/undo-tree=.
+*** Terminal emulator
 
 #+begin_src emacs-lisp
-  (defconst undo-tree-directory
-    (expand-file-name "undo-tree" aux-directory))
-  (use-package undo-tree
-    :ensure t
-    :custom (undo-tree-history-directory-alist
-	     `((".*" . ,undo-tree-directory)))
-    :config (global-undo-tree-mode))
+  (defun jess/disable-line-num-and-hl ()
+    (display-line-numbers-mode -1)
+    (setq-local global-hl-line-mode nil))
+  (defun jess/update-pwd (path)
+    (setq default-directory path))
+  (use-package vterm
+    :bind
+    (("s-t" . vterm)
+     :map vterm-mode-map
+     ("C-q"   . vterm-send-next-key)
+     ("C-M-v" . nil)
+     :map vterm-copy-mode-map
+     ("M-w" . vterm-copy-mode-done))
+    :hook
+    (vterm-mode . jess/disable-line-num-and-hl)
+    :custom
+    (vterm-buffer-name-string "vterm %s")
+    (vterm-eval-cmds
+     (let* ((cmds (custom--standard-value 'vterm-eval-cmds)))
+       (add-to-list 'cmds ("update-pwd" jess/update-pwd)))))
 #+end_src
 
-*** Buffer and window management
+*** Git client - Magit
 
 #+begin_src emacs-lisp
-  (winner-mode)
+  (use-package magit)
 #+end_src
 
+** Window and buffer management
+
+*** Perspective
+
 #+begin_src emacs-lisp
+  (defconst jess/persp-state-file
+    (expand-file-name "persp-state" jess/aux-directory))
   (use-package perspective
-    :ensure t
-    :bind (("C-x C-b" . persp-list-buffers)
-	   ("C-x b"   . persp-counsel-switch-buffer))
-    :custom ((persp-mode-prefix-key (kbd "s-p"))
-	     (persp-state-default-file (expand-file-name "persp-state" user-emacs-directory)))
-    :init (persp-mode))
-  (run-at-time nil (* 3 60) 'persp-state-save)
+    :after counsel
+    :bind
+    ("C-x C-b" . persp-list-buffers)
+    ("C-x b"   . persp-counsel-switch-buffer)
+    :custom
+    (persp-mode-prefix-key (kbd "s-p"))
+    (persp-state-default-file jess/persp-state-file)
+    :hook
+    (elpaca-after-init . persp-mode)
+    :config
+    (run-at-time nil (* 3 60) 'persp-state-save))
 #+end_src
 
-*** Window switch key binding
+*** Window switch key bindings
 
 #+begin_src emacs-lisp
   (global-set-key (kbd "M-o") 'other-window)
@@ -484,174 +340,132 @@ undo-tree files into =aux/undo-tree=.
 		  (lambda () (interactive) (other-window -1)))
 #+end_src
 
-** Completion frame work - Ivy, Counsel, Swiper
+* Dired
 
-These three packages are contained in a same GitHub repository, and
-are strongly relevant.
+** External =ls= program
 
-*** Ivy
+#+begin_src emacs-lisp
+  (setq insert-directory-program
+	(shell-command-to-string "which ls | tr -d '\n'"))
+  (let* ((ls-opts (getenv "EMACS_LS_OPTS")))
+    (if ls-opts
+	(custom-set-variables
+	 '(dired-listing-switches ls-opts))))
+#+end_src
 
-Ivy is a generic completion mechanism for Emacs. It aims to be more
-efficient, smaller, simpler, and smoother to use yet highly
-customizable.
+** Reusing Dired buffer
 
-*** Counsel
+#+begin_src emacs-lisp
+  (put 'dired-find-alternate-file 'disabled nil)
+  (defun jess/dired-find-file ()
+    (interactive)
+    (let* ((filename (dired-get-filename)))
+			(if (file-directory-p filename)
+			    (dired-find-alternate-file)
+			  (dired-find-file))))
+  (defun jess/dired-goto-parent-directory ()
+    (interactive)
+    (find-alternate-file ".."))
+#+end_src
 
-Counsel takes =ivy-mode= further, providing versions of common Emacs
-commands that are customised to make the best use of Ivy.
+** Prefixing Dired buffers
 
-*** Swiper
+#+begin_src emacs-lisp
+  (defun jess/prefix-dired-buffers ()
+    (rename-buffer (generate-new-buffer-name
+		    (format "dired %s" dired-directory))))
+#+end_src
 
-Swiper is an alternative to isearch that uses Ivy to show an overview
-of all matches.
+** Hide unintersting files
 
-*** Basic setup for these packages
+#+begin_src emacs-lisp
+  (defconst jess/dired-omit-files
+    (progn (require 'dired-x)
+	   (concat (custom--standard-value 'dired-omit-files)
+	    "\\|\.DS_Store"
+	    "\\|\.CFUserTextEncoding")))
+#+end_src
 
-Ivy is split into three packages: =ivy=, =swiper= and =counsel=; by
-installing =counsel=, the other two are brought in as dependencies.
+** Applying configurations
+
+#+begin_src emacs-lisp
+  (use-feature dired
+    :hook
+    (dired-mode . jess/prefix-dired-buffers)
+    :bind
+    (:map dired-mode-map
+	  ("RET" . jess/dired-find-file)
+	  ("^"   . jess/dired-goto-parent-directory)))
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-feature dired-x
+    :after dired
+    :custom
+    (dired-omit-files jess/dired-omit-files)
+    :hook
+    (dired-mode . dired-omit-mode))
+#+end_src
+
+* Completion Framework
 
 #+begin_src emacs-lisp
   (use-package counsel
-    :ensure t
-    :custom ((ivy-height 16)
-	     (ivy-use-virtual-buffers t)
-	     (ivy-count-format "(%d/%d) ")
-	     (enable-recursive-minibuffers t))
-    :bind (("C-s"     . swiper-isearch)
-	   ("M-x"     . counsel-M-x)
-	   ("C-x C-f" . counsel-find-file)
-	   ("M-y"     . counsel-yank-pop)
-	   ("C-h f"   . counsel-describe-function)
-	   ("C-h v"   . counsel-describe-variable))
+    :custom
+    (ivy-height 16)
+    (ivy-use-virtual-buffers t)
+    (ivy-count-format "(%d/%d) ")
+    (enable-recursive-minibuffers t)
+    (ivy-initial-inputs-alist nil)
+    (ivy-mode t)
+    :bind
+    ("C-s"     . swiper-isearch)
+    ("M-x"     . counsel-M-x)
+    ("C-x C-f" . counsel-find-file)
+    ("M-y"     . counsel-yank-pop)
+    ("C-h f"   . counsel-describe-function)
+    ("C-h v"   . counsel-describe-variable)
     :config
-    (ivy-mode)
-    (setq ivy-initial-inputs-alist nil)
     (setq ivy-re-builders-alist
 	  '((swiper-isearch . ivy--regex-plus)
 	    (t              . ivy--regex-fuzzy))))
 #+end_src
 
-Notes that =M-y= would not pop up minibuffer when a minibuffer already
-popped up if =enable-recursive-minibuffers= is set to =nil=.
+* Manipulate Different Types of Files
 
-*** Completion style
-
-Ivy's completion functions rely on a regex builder - a function that
-transforms a string input to a string regex. All current candidates
-simply have to match this regex. Each collection can be assigned its
-own regex builder by customizing =ivy-re-builders-alist=.
-
-1. =ivy--regex-fuzzy= splits each character with a wild card. It is
-   set as the default completion style by above snippet.
-2. =ivy--regex-plus= matches by splitting the input by spaces and
-   rebuilding it into a regex.
-
-*** Useful key bindings that in minibuffer
-
-1. =M-j= (=ivy-yank-word=): inserts the sub-word at point into the
-   minibuffer, similar to =C-s C-w= with =isearch=.
-2. =M-r= (=ivy-toggle-regexp-quote=): toggle between input as regexp
-   or not.
-
-** Navigating around visible texts
-
-Load the file mentioned in the post [[https://karthinks.com/software/avy-can-do-anything][AVY CAN DO ANYTHING]]. Key bindings
-in =avy-actions.el= has been removed.
-
-#+begin_src emacs-lisp
-  (use-package avy
-    :ensure t
-    :bind (("C-." . avy-goto-char-timer)
-	   ("C-:" . avy-goto-char-in-line)
-	   ("C-;" . avy-goto-char))
-    :config
-    (progn
-      (load-file (expand-file-name "avy-actions.el" user-emacs-directory))
-      (setq avy-keys '(?s ?h ?n ?e ?o ?a ?i ?d ?r ?u ?p ?c ?l))))
-#+end_src
-
-** Terminal emulator - vterm
-
-=vterm= is fully-fledged terminal emulator inside GNU Emacs based on
-libvterm, a C library. As a result of using compiled code (instead of
-elisp), emacs-libvterm is fully capable, fast, and it can seamlessly
-handle large outputs.
-
-#+begin_src emacs-lisp
-  (use-package vterm
-    :ensure t
-    :bind (("s-t" . vterm)
-	   :map vterm-mode-map
-	   ("C-q"   . vterm-send-next-key)
-	   ("C-M-v" . nil)
-	   :map vterm-copy-mode-map
-	   ("M-w" . vterm-copy-mode-done))
-    :hook (vterm-mode . (lambda ()
-			  (display-line-numbers-mode -1)
-			  (setq-local global-hl-line-mode nil)))
-    :custom (vterm-buffer-name-string "vterm %s")
-    :config (add-to-list 'vterm-eval-cmds
-			 '("update-pwd"
-			   (lambda (path)
-			     (setq default-directory path)))))
-#+end_src
-
-** Version control system (VCS) - Magit
-
-#+begin_src emacs-lisp
-  (use-package magit
-    :ensure t)
-#+end_src
-
-** Language Server Protocol (LSP) - Eglot
-
-Eglot is the Emacs client for the Language Server Protocol (LSP). The
-name "Eglot" is an acronym that stands for "Emacs Polyglot". Eglot
-provides infrastructure and a set of commands for enriching the source
-code editing capabilities of Emacs via LSP.
+** Language server protocol - Eglot
 
 #+begin_src emacs-lisp
   (use-package eglot
-    :ensure t
-    :hook (prog-mode . eglot-ensure)
     :custom (eglot-extend-to-xref t))
 #+end_src
 
-** Packages for each language
+
+** Configurations for each type of files
 
 *** Python
 
 #+begin_src emacs-lisp
   (use-package pyvenv-auto
-    :ensure t
     :hook (python-mode . pyvenv-auto-run))
 #+end_src
 
 *** Markdown
 
 #+begin_src emacs-lisp
-  (use-package markdown-mode :ensure t)
+  (use-package markdown-mode)
 #+end_src
 
 *** CSV
 
 #+begin_src emacs-lisp
-  (use-package csv-mode :ensure t)
+  (use-package csv-mode)
 #+end_src
 
-* Org mode
-
-** Show =org-mode= bullets as UTF-8 characters
+*** Org
 
 #+begin_src emacs-lisp
   (use-package org-bullets
-    :ensure t
+    :after org
     :hook (org-mode . org-bullets-mode))
-#+end_src
-
-** Generate table of contents
-
-#+begin_src emacs-lisp
-  (use-package org-make-toc
-    :ensure t)
 #+end_src
