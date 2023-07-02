@@ -528,7 +528,6 @@
   (defconst jess/persp-state-file
     (expand-file-name "persp-state" jess/aux-directory))
   (use-package perspective
-    :after consult
     :bind
     ("C-x C-b" . persp-list-buffers)
     :custom
@@ -538,8 +537,10 @@
     (elpaca-after-init . persp-mode)
     :config
     (run-at-time nil (* 3 60) 'persp-state-save)
-    (consult-customize consult--source-buffer :hidden t :default nil)
-    (add-to-list 'consult-buffer-sources persp-consult-source))
+    (progn
+      (require 'consult)
+      (consult-customize consult--source-buffer :hidden t :default nil)
+      (add-to-list 'consult-buffer-sources persp-consult-source)))
 #+end_src
 
 *** Window switch key bindings
