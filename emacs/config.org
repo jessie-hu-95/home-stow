@@ -106,6 +106,8 @@ The =diminish= package is installed to hide or minimize minor mode indicators.
   (diminish 'line-number-mode)
   (add-hook 'eldoc-mode-hook
 	    (lambda () (diminish 'eldoc-mode)))
+  (add-hook 'flymake-mode-hook
+	    (lambda () (diminish 'flymake-mode)))
 #+end_src
 
 * Basic Configuration
