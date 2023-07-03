@@ -450,11 +450,11 @@ visualizing undo/redo history in Emacs.
   (defconst jess/undo-tree-directory
     (expand-file-name "undo-tree" jess/aux-directory))
   (use-package undo-tree
+    :diminish
     :custom
     (undo-tree-history-directory-alist
      `((".*" . ,jess/undo-tree-directory)))
-    :config
-    (undo-tree-mode))
+    (global-undo-tree-mode t))
 #+end_src
 
 *** Window layout history
