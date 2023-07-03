@@ -110,6 +110,121 @@ The =diminish= package is installed to hide or minimize minor mode indicators.
 
 * Basic Configuration
 
+** Dired
+
+*** External =ls= program
+
+The code  configures Dired  mode in Emacs  to use an  external =ls=  command for
+directory listings. It sets the  =insert-directory-program= variable to the path
+of the  =ls= command and allows  customization of the command's  options through
+the =DIRED_LS_OPTS= environment variable.
+
+#+begin_src emacs-lisp
+  (defun jess/config-dired-external-ls ()
+    (setq insert-directory-program
+	  (shell-command-to-string "which ls | tr -d '\n'"))
+    (let* ((ls-opts (getenv "DIRED_LS_OPTS")))
+      (if ls-opts
+	  (custom-set-variables
+	   '(dired-listing-switches ls-opts)))))
+#+end_src
+
+This function should be called after =exec-path= configured.
+
+#+begin_src emacs-lisp
+  (add-hook 'elpaca-after-init-hook 'jess/config-dired-external-ls)
+#+end_src
+
+*** Reusing Dired buffer
+
+Defines the =dired-find-alternate-file= command as not disabled, allowing you to
+open a directory in =dired= mode without creating a new buffer.
+
+#+begin_src emacs-lisp
+  (put 'dired-find-alternate-file 'disabled nil)
+#+end_src
+
+The  =jess/dired-find-file=   function  checks  if   the  selected  file   is  a
+directory. If it is, it  opens it with =dired-find-alternate-file=, which reuses
+the current buffer for  the new directory. If it is a regular  file, it opens it
+with =dired-find-file=, which creates a new buffer for the file.
+
+#+begin_src emacs-lisp
+  (defun jess/dired-find-file ()
+    (interactive)
+    (let* ((filename (dired-get-filename)))
+      (if (file-directory-p filename)
+	  (dired-find-alternate-file)
+	(dired-find-file))))
+#+end_src
+
+The =jess/dired-goto-parent-directory=  function quickly moves up  to the parent
+directory in dired mode using the =find-alternate-file= command.
+
+#+begin_src emacs-lisp
+  (defun jess/dired-goto-parent-directory ()
+    (interactive)
+    (find-alternate-file ".."))
+#+end_src
+
+*** Prefixing Dired buffers
+
+This code snippet defines the function =jess/prefix-dired-buffers= to prefix the
+names of =dired= buffers with the  directory name. It renames the current buffer
+by generating a new name using the  format ="dired %s"= followed by the value of
+=dired-directory=.
+
+#+begin_src emacs-lisp
+  (defun jess/prefix-dired-buffers ()
+    (rename-buffer (generate-new-buffer-name
+		    (format "dired %s" dired-directory))))
+#+end_src
+
+*** Hide unintersting files
+
+This  code  snippet defines  the  constant  variable =jess/dired-omit-files=  to
+specify the  files to be omitted  in =dired= mode. It  concatenates the standard
+value  of   =dired-omit-files=  with   the  file  patterns   ="\.DS_Store"=  and
+="\.CFUserTextEncoding"=.
+
+#+begin_src emacs-lisp
+  (defconst jess/dired-omit-files
+    (progn (require 'dired-x)
+	   (concat (custom--standard-value 'dired-omit-files)
+	    "\\|\.DS_Store"
+	    "\\|\.CFUserTextEncoding")))
+#+end_src
+
+*** Applying configurations
+
+This   code  snippet   enhances  =dired=   mode   in  Emacs   by  applying   the
+=jess/prefix-dired-buffers= function  to prefix buffer names  with the directory
+name. It also  defines key bindings in =dired-mode-map= for  convenient file and
+directory navigation using =RET= and =^= keys.
+
+#+begin_src emacs-lisp
+  (use-feature dired
+    :hook
+    (dired-mode . jess/prefix-dired-buffers)
+    :bind
+    (:map dired-mode-map
+	  ("RET" . jess/dired-find-file)
+	  ("^"   . jess/dired-goto-parent-directory)))
+#+end_src
+
+This  code snippet  enables file  omission in  =dired= mode  by customizing  the
+=dired-omit-files=  variable  and  activating =dired-omit-mode=.   It  uses  the
+=jess/dired-omit-files= value to specify the files to be omitted.
+
+#+begin_src emacs-lisp
+  (use-feature dired-x
+    :after dired
+    :custom
+    (dired-omit-files jess/dired-omit-files)
+    :hook
+    (dired-mode . dired-omit-mode))
+#+end_src
+
 ** Making Emacs write auxiliary files elsewhere
 
 This  code  sets up  a  structured  directory  system  within the  user's  Emacs
@@ -298,7 +413,7 @@ save the recentf list.
    '(recentf-max-saved-items 256)
    '(recentf-auto-cleanup 'never)
    '(recentf-mode t))
-  (global-set-key (kbd "C-r") 'recentf-open-files)
+  (global-set-key (kbd "s-r") 'recentf-open-files)
   (run-at-time nil (* 3 60) 'recentf-save-list)
 #+end_src
 
@@ -460,11 +575,13 @@ the =avy= package.
 	   (forward-char)))
 #+end_src
 
-These key bindings  provide convenient shortcuts for using =avy=  to navigate to
-specific characters or locations in the buffer.
+The  code  configures  the  =avy=  package  in  Emacs  for  efficient  character
+navigation and sets keybindings for quick jumping in the buffer.
 
 #+begin_src emacs-lisp
   (use-package avy
+    :custom
+    (avy-keys '(?t ?n ?h ?e ?s ?o ?a ?i ?r ?u ?d ?p ?l))
     :bind
     ("C-." . avy-goto-char-timer)
     ("s-," . avy-goto-char)
@@ -730,114 +847,6 @@ You can easily switch  between windows in Emacs using =M-o=  to move forward and
 		  (lambda () (interactive) (other-window -1)))
 #+end_src
 
-** Dired
-
-*** External =ls= program
-
-This code  snippet configures the  behavior of  the directory listing  in Emacs'
-=dired= mode. It sets the =insert-directory-program= variable to the path of the
-=ls= command and  customizes the =dired-listing-switches= variable  based on the
-value of the =EMACS_LS_OPTS= environment variable, if available.
-
-#+begin_src emacs-lisp
-  (setq insert-directory-program
-	(shell-command-to-string "which ls | tr -d '\n'"))
-  (let* ((ls-opts (getenv "EMACS_LS_OPTS")))
-    (if ls-opts
-	(custom-set-variables
-	 '(dired-listing-switches ls-opts))))
-#+end_src
-
-*** Reusing Dired buffer
-
-Defines the =dired-find-alternate-file= command as not disabled, allowing you to
-open a directory in =dired= mode without creating a new buffer.
-
-#+begin_src emacs-lisp
-  (put 'dired-find-alternate-file 'disabled nil)
-#+end_src
-
-The  =jess/dired-find-file=   function  checks  if   the  selected  file   is  a
-directory. If it is, it  opens it with =dired-find-alternate-file=, which reuses
-the current buffer for  the new directory. If it is a regular  file, it opens it
-with =dired-find-file=, which creates a new buffer for the file.
-
-#+begin_src emacs-lisp
-  (defun jess/dired-find-file ()
-    (interactive)
-    (let* ((filename (dired-get-filename)))
-      (if (file-directory-p filename)
-	  (dired-find-alternate-file)
-	(dired-find-file))))
-#+end_src
-
-The =jess/dired-goto-parent-directory=  function quickly moves up  to the parent
-directory in dired mode using the =find-alternate-file= command.
-
-#+begin_src emacs-lisp
-  (defun jess/dired-goto-parent-directory ()
-    (interactive)
-    (find-alternate-file ".."))
-#+end_src
-
-*** Prefixing Dired buffers
-
-This code snippet defines the function =jess/prefix-dired-buffers= to prefix the
-names of =dired= buffers with the  directory name. It renames the current buffer
-by generating a new name using the  format ="dired %s"= followed by the value of
-=dired-directory=.
-
-#+begin_src emacs-lisp
-  (defun jess/prefix-dired-buffers ()
-    (rename-buffer (generate-new-buffer-name
-		    (format "dired %s" dired-directory))))
-#+end_src
-
-*** Hide unintersting files
-
-This  code  snippet defines  the  constant  variable =jess/dired-omit-files=  to
-specify the  files to be omitted  in =dired= mode. It  concatenates the standard
-value  of   =dired-omit-files=  with   the  file  patterns   ="\.DS_Store"=  and
-="\.CFUserTextEncoding"=.
-
-#+begin_src emacs-lisp
-  (defconst jess/dired-omit-files
-    (progn (require 'dired-x)
-	   (concat (custom--standard-value 'dired-omit-files)
-	    "\\|\.DS_Store"
-	    "\\|\.CFUserTextEncoding")))
-#+end_src
-
-*** Applying configurations
-
-This   code  snippet   enhances  =dired=   mode   in  Emacs   by  applying   the
-=jess/prefix-dired-buffers= function  to prefix buffer names  with the directory
-name. It also  defines key bindings in =dired-mode-map= for  convenient file and
-directory navigation using =RET= and =^= keys.
-
-#+begin_src emacs-lisp
-  (use-feature dired
-    :hook
-    (dired-mode . jess/prefix-dired-buffers)
-    :bind
-    (:map dired-mode-map
-	  ("RET" . jess/dired-find-file)
-	  ("^"   . jess/dired-goto-parent-directory)))
-#+end_src
-
-This  code snippet  enables file  omission in  =dired= mode  by customizing  the
-=dired-omit-files=  variable  and  activating =dired-omit-mode=.   It  uses  the
-=jess/dired-omit-files= value to specify the files to be omitted.
-
-#+begin_src emacs-lisp
-  (use-feature dired-x
-    :after dired
-    :custom
-    (dired-omit-files jess/dired-omit-files)
-    :hook
-    (dired-mode . dired-omit-mode))
-#+end_src
-
 * Manipulate Different Types of Files
 
 ** Language server protocol - Eglot
@@ -849,7 +858,6 @@ cross-referencing support.
   (use-package eglot
     :custom (eglot-extend-to-xref t))
 #+end_src
-
 
 ** Configurations for each type of files
 
@@ -881,4 +889,10 @@ activate the appropriate virtual environment when entering =python-mode=.
   (use-package org-bullets
     :after org
     :hook (org-mode . org-bullets-mode))
+#+end_src
+
+*** Json
+
+#+begin_src emacs-lisp
+  (use-package json-mode)
 #+end_src
