@@ -505,7 +505,7 @@ remembering key combinations.
   (use-package which-key
     :diminish
     :custom
-    (which-key-side-window-location 'right)
+    (which-key-side-window-location 'left)
     (which-key-max-description-length 36)
     (which-key-max-display-columns 1)
     (which-key-mode t))
