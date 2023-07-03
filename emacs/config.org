@@ -852,11 +852,18 @@ You can easily switch  between windows in Emacs using =M-o=  to move forward and
 ** Language server protocol - Eglot
 
 This  code  configures   the  =eglot=  package  in  Emacs   to  enable  extended
-cross-referencing support.
+cross-referencing support. First, install =project= by =elpaca=, because =eglot=
+does not work with the built-in =project= library.
 
 #+begin_src emacs-lisp
+  (use-package project)
   (use-package eglot
-    :custom (eglot-extend-to-xref t))
+    :after project
+    :hook
+    (c++-mode    . eglot-ensure)
+    (python-mode . eglot-ensure)
+    :custom
+    (eglot-extend-to-xref t))
 #+end_src
 
 ** Configurations for each type of files
