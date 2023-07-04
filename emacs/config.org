@@ -781,12 +781,7 @@ spacing around colons.
     (if (eq system-type 'darwin)
 	(progn
 	  (load-file (expand-file-name "lisp/utils.el" user-emacs-directory))
-	  (setq openai-key
-		(jess/get-macos-keychain-password "openai"))
-	  (setq openai-user
-		(jess/file-string
-		 (expand-file-name
-		  "jess/openai-user.txt" user-emacs-directory))))
+	  (setq openai-key (jess/get-macos-keychain-password "openai")))
       (message "System type mismatch, required: darwin")))
 #+end_src
 
