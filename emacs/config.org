@@ -378,8 +378,10 @@ offer different color schemes and styles to enhance your coding experience.
 
 #+begin_src emacs-lisp
   (use-package ef-themes
-    :custom (ef-themes-region '(no-extend))
-    :config (load-theme 'ef-summer t))
+    :custom
+    (ef-themes-region '(no-extend))
+    :hook
+    (elpaca-after-init . (lambda () (load-theme 'ef-summer t))))
 #+end_src
 
 ** Minibuffer configurations
@@ -770,6 +772,37 @@ spacing around colons.
    '(fill-column 80)
    '(default-justification 'full)
    '(sentence-end-double-space nil))
+#+end_src
+
+** AI assistant
+
+#+begin_src emacs-lisp
+  (defun jess/config-openai ()
+    (if (eq system-type 'darwin)
+	(progn
+	  (load-file (expand-file-name "lisp/utils.el" user-emacs-directory))
+	  (setq openai-key
+		(jess/get-macos-keychain-password "openai"))
+	  (setq openai-user
+		(jess/file-string
+		 (expand-file-name
+		  "jess/openai-user.txt" user-emacs-directory))))
+      (message "System type mismatch, required: darwin")))
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package openai
+    :elpaca
+    (:type git :host github :repo "emacs-openai/openai")
+    :config
+    (jess/config-openai))
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package chatgpt
+    :after openai
+    :elpaca
+    (:type git :host github :repo "emacs-openai/chatgpt"))
 #+end_src
 
 ** Window and buffer management

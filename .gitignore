@@ -9,3 +9,8 @@ emacs/transient
 emacs/config.el
 emacs/custom.el
 emacs/config.[!o][!r][!g]
+emacs/jess
+emacs/elpaca
+emacs/projects
+emacs/request
+emacs/history
