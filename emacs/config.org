@@ -355,18 +355,21 @@ This snippet customizes various visual and scrolling settings in Emacs:
      ;; Disable mode line lighter for line numbers
      '(line-number-mode nil)
 
-     ;; Specify the  number of lines  to keep visible  above and below  the cursor
-     ;; when scrolling
-     '(scroll-margin 32)
-
      ;; Preserve cursor position when scrolling
      '(scroll-preserve-screen-position t)
 
      ;; Specify the threshold for scrolling the window by lines instead of pixels
      '(scroll-conservatively 101)
 
+     '(pixel-scroll-mode t)
+
      ;; Set default frame attributes
      '(default-frame-alist '((width . 88) (height . 24))))
+#+end_src
+
+#+begin_src emacs-lisp
+  (global-set-key [remap scroll-up-command] (lambda () (interactive) (pixel-scroll-up 16)))
+  (global-set-key [remap scroll-down-command] (lambda () (interactive) (pixel-scroll-down 16)))
 #+end_src
 
 The =ef-themes=  package provides a collection  of custom Emacs themes  that you
