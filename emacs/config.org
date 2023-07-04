@@ -524,7 +524,24 @@ easier to type and navigate code with suggestions and completions.
   (use-package company
     :diminish
     :custom
-    (global-company-mode t))
+    ;; Configurations File
+    (company-minimum-prefix-length 1)
+    (company-idle-delay 0)
+    (global-company-mode t)
+    (company-require-match nil)
+    ;; Tooltip Frontends
+    (company-tooltip-align-annotations t)
+    (company-tooltip-limit 32)
+    (company-tooltip-offset-display 'lines)
+    (company-tooltip-flip-when-above t)
+    (company-format-margin-function 'company-text-icons-margin)
+    (company-text-face-extra-attributes '(:weight bold :slant italic))
+    (company-text-icons-add-background t)
+    (company-show-quick-access t)
+    ;; Quick Access a Candidate
+    (company-quick-access-modifier 'super)
+    (company-quick-access-keys
+     '("n" "t" "e" "h" "o" "s" "i" "a" "u" "r" "p" "d" "l" "c" "h" "g")))
 #+end_src
 
 *** Navigating around visible texts
@@ -554,11 +571,12 @@ navigation and sets keybindings for quick jumping in the buffer.
 #+begin_src emacs-lisp
   (use-package avy
     :custom
-    (avy-keys '(?t ?n ?h ?e ?s ?o ?a ?i ?r ?u ?d ?p ?l))
+    (avy-keys
+     '(?n ?t ?e ?h ?o ?s ?i ?a ?u ?r ?p ?d ?l ?c ?h ?g))
     :bind
-    ("C-." . avy-goto-char-timer)
-    ("s-," . avy-goto-char)
-    ("s-." . jess/avy-goto-next-char))
+    ("s-RET" . avy-goto-char-timer)
+    ("s-["   . avy-goto-char)
+    ("s-]"   . jess/avy-goto-next-char))
 #+end_src
 
 *** Terminal emulator
@@ -775,6 +793,17 @@ spacing around colons.
 #+end_src
 
 ** AI assistant
+
+*** TabNine
+
+#+begin_src emacs-lisp
+  (use-package company-tabnine
+    :after company
+    :config
+    (add-to-list 'company-backends #'company-tabnine))
+#+end_src
+
+*** ChatGPT
 
 #+begin_src emacs-lisp
   (defun jess/config-openai ()
