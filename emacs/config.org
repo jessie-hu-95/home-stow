@@ -642,7 +642,7 @@ and efficient display of completion candidates.
 #+begin_src emacs-lisp
   (use-package vertico
     :custom
-    (vertico-count 32)
+    (vertico-count 16)
     :hook
     (elpaca-after-init . vertico-mode))
 #+end_src
@@ -790,6 +790,14 @@ spacing around colons.
    '(fill-column 80)
    '(default-justification 'full)
    '(sentence-end-double-space nil))
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package nyan-mode
+    :custom
+    (nyan-mode t)
+    (nyan-animate-nyancat t)
+    (nyan-bar-length 16))
 #+end_src
 
 ** AI assistant
