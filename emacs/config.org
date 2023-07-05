@@ -540,10 +540,8 @@ easier to type and navigate code with suggestions and completions.
     (company-show-quick-access t)
     ;; Quick Access a Candidate
     (company-quick-access-modifier 'super)
-    (warning-minimum-level :emergency)
     (company-quick-access-keys
-     '("n" "t" "e" "h" "o" "s" "i" "a" "u" "r" "p" "d" "l" "c" "h" "g"))
-    (warning-minimum-level :warning))
+     '("n" "t" "e" "h" "o" "s" "i" "a" "u" "r" "p" "d" "l" "c" "y" "g")))
 #+end_src
 
 *** Navigating around visible texts
@@ -574,7 +572,7 @@ navigation and sets keybindings for quick jumping in the buffer.
   (use-package avy
     :custom
     (avy-keys
-     '(?n ?t ?e ?h ?o ?s ?i ?a ?u ?r ?p ?d ?l ?c ?h ?g))
+     '(?n ?t ?e ?h ?o ?s ?i ?a ?u ?r ?p ?d ?l ?c ?y ?g))
     :bind
     ("s-SPC" . avy-goto-char-timer)
     ("s-["   . avy-goto-char)
