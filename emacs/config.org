@@ -128,12 +128,7 @@ the =DIRED_LS_OPTS= environment variable.
       (if ls-opts
 	  (custom-set-variables
 	   '(dired-listing-switches ls-opts)))))
-#+end_src
-
-This function should be called after =exec-path= configured.
-
-#+begin_src emacs-lisp
-  (add-hook 'elpaca-after-init-hook 'jess/config-dired-external-ls)
+  (jess/config-dired-external-ls)
 #+end_src
 
 *** Reusing Dired buffer
