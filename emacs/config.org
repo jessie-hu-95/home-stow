@@ -91,6 +91,7 @@ variable as your shell.
   (use-package exec-path-from-shell
     :if (eq system-type 'darwin)
     :init (exec-path-from-shell-initialize))
+  (elpaca-wait)
 #+end_src
 
 ** Hide mode line lighter
@@ -825,39 +826,6 @@ spacing around colons.
 #+end_src
 
 ** Window and buffer management
-
-*** Perspective
-
-The directory for =persp-state= file.
-
-#+begin_src emacs-lisp
-  (defconst jess/persp-state-file
-    (expand-file-name "persp-state" jess/aux-directory))
-#+end_src
-
-This code  snippet configures the  =perspective= package  in Emacs. It  sets key
-binding for =persp-list-buffers= command, customizes  the prefix key and default
-file  for  saving the  =perspective=  state,  enables =persp-mode=  after  Emacs
-initialization,  and  configures periodic  saving  of  the =perspective=  state.
-Additionally,  it  integrates  =perspective=  with  the  =consult=  package  for
-enhanced buffer selection.
-
-#+begin_src emacs-lisp
-  (use-package perspective
-    :bind
-    ("C-x C-b" . persp-list-buffers)
-    :custom
-    (persp-mode-prefix-key (kbd "s-p"))
-    (persp-state-default-file jess/persp-state-file)
-    :hook
-    (elpaca-after-init . persp-mode)
-    :config
-    (run-at-time nil (* 3 60) 'persp-state-save)
-    (progn
-      (require 'consult)
-      (consult-customize consult--source-buffer :hidden t :default nil)
-      (add-to-list 'consult-buffer-sources persp-consult-source)))
-#+end_src
 
 *** Window switch key bindings
 
