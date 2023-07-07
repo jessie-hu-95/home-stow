@@ -90,7 +90,7 @@ variable as your shell.
 #+begin_src emacs-lisp
   (use-package exec-path-from-shell
     :if (eq system-type 'darwin)
-    :config (exec-path-from-shell-initialize))
+    :init (exec-path-from-shell-initialize))
   (elpaca-wait)
 #+end_src
 
@@ -783,7 +783,6 @@ spacing around colons.
 #+begin_src emacs-lisp
   (custom-set-variables
    '(fill-column 80)
-   '(default-justification 'full)
    '(sentence-end-double-space nil))
 #+end_src
 
@@ -956,4 +955,14 @@ activate the appropriate virtual environment when entering =python-mode=.
 
 #+begin_src emacs-lisp
   (use-package json-mode)
+#+end_src
+
+*** PDF
+
+#+begin_src emacs-lisp
+  (use-package pdf-tools
+    :config
+    (pdf-tools-install)
+    (pdf-loader-install)
+    (add-hook 'pdf-view-mode-hook 'jess/disable-line-num-and-hl))
 #+end_src
