@@ -91,7 +91,6 @@ variable as your shell.
   (use-package exec-path-from-shell
     :if (eq system-type 'darwin)
     :init (exec-path-from-shell-initialize))
-  (elpaca-wait)
 #+end_src
 
 ** Hide mode line lighter
@@ -779,12 +778,6 @@ This code  snippet customizes  text formatting  settings in  Emacs. It  sets the
 =fill-column=   to  =80=,   =default-justification=  to   =full=,  and   enables
 =colon-double-space=. These  settings control line wrapping,  justification, and
 spacing around colons.
-
-#+begin_src emacs-lisp
-  (custom-set-variables
-   '(fill-column 80)
-   '(sentence-end-double-space nil))
-#+end_src
 
 #+begin_src emacs-lisp
   (use-package nyan-mode
