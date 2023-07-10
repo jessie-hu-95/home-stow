@@ -8,11 +8,13 @@
   (custom-set-variables
    '(package-archives
      '(("gnu"          . "https://mirrors.ustc.edu.cn/elpa/gnu/")
-       ("stable-melpa" . "https://mirrors.ustc.edu.cn/elpa/stable-melpa/")
+       ("nongnu"       . "https://mirrors.ustc.edu.cn/elpa/nongnu/")
+       ("melpa-stable" . "https://mirrors.ustc.edu.cn/elpa/stable-melpa/")
        ("melpa"        . "https://mirrors.ustc.edu.cn/elpa/melpa/")))
    '(package-archive-priorities
-     '(("gnu"          . 3)
-       ("stable-melpa" . 2)
+     '(("gnu"          . 4)
+       ("nongnu"       . 3)
+       ("melpa-stable" . 2)
        ("melpa"        . 1))))
 #+end_src
 
@@ -57,6 +59,7 @@ The =diminish= package is installed to hide or minimize minor mode indicators.
     :hook
     (eldoc-mode   . (lambda () (diminish 'eldoc-mode)))
     (flymake-mode . (lambda () (diminish 'flymake-mode)))
+    (org-src-mode . (lambda () (diminish 'org-src-mode)))
     :config
     (diminish 'visual-line-mode)
     (diminish 'line-number-mode))
@@ -772,19 +775,48 @@ cross-referencing capabilities.
 #+begin_src emacs-lisp
   (defconst jess/c++-lsp-server
     '("clangd"
-      "-j 8"                        ;; Number of threads for background indexing
-      "--background-index"          ;; Enables background indexing
-      "--clang-tidy"                ;; Enables Clang-Tidy static analysis
-      "--cross-file-rename"         ;; Enables cross-file renaming of symbols
-      "--completion-style=detailed" ;; Configures detailed completion style
-      "--pch-storage=memory")       ;; Sets precompiled header storage to memory
-    )
+      ;; Enables completion in all scopes
+      "--all-scopes-completion"
+
+      ;; Sets the priority of background indexing to normal
+      "--background-index-priority=normal"
+
+      ;; Enables background indexing
+      "--background-index"
+
+      ;; Enables Clang-Tidy static analysis
+      "--clang-tidy"
+
+      ;; Configures detailed completion style
+      "--completion-style=detailed"
+
+      ;; Performs header insertion using IWYU
+      "--header-insertion=iwyu"
+
+      ;; Limits the number of references to show (0 means unlimited)
+      "--limit-references=0"
+
+      ;; Limits the number of results to show (0 means unlimited)
+      "--limit-results=0"
+
+      ;; Limits the number of file renames (0 means unlimited)
+      "--rename-file-limit=0"
+
+      ;; Sets precompiled header storage to memory
+      "--pch-storage=memory"
+
+      ;; Enables verbose logging (adjust level as needed)
+      "--log=verbose"
+
+      ;; Number of threads for background indexing
+      "-j=8"
+      ))
 #+end_src
 
 #+begin_src emacs-lisp
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
-		 `(c++-mode ,jess/c++-lsp-server)))
+		 `(c++-mode . ,jess/c++-lsp-server)))
 #+end_src
 
 *** Python
@@ -796,7 +828,7 @@ cross-referencing capabilities.
 #+begin_src emacs-lisp
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
-		 `(python-mode ,jess/python-lsp-server)))
+		 `(python-mode . ,jess/python-lsp-server)))
 #+end_src
 
 This =pyvenv-auto= package automatically activates the appropriate virtual
