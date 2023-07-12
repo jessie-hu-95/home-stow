@@ -1,99 +1,53 @@
 #+title: Jessie's GNU Emacs Configuration
 
-* Package Manager - =elpaca=
+* Package Management
 
-** Bootstrap
-
-=elpaca= is a lightweight package manager for Emacs.  It simplifies the process
-of installing, managing, and updating Emacs packages.  With elpaca, you can
-easily extend the functionality of your Emacs editor by installing various
-packages available in the package archive.
+** Package Archives
 
 #+begin_src emacs-lisp
-  (defvar elpaca-installer-version 0.5)
-  (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
-  (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-  (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
-  (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-				:ref nil
-				:files (:defaults (:exclude "extensions"))
-				:build (:not elpaca--activate-package)))
-  (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
-	 (build (expand-file-name "elpaca/" elpaca-builds-directory))
-	 (order (cdr elpaca-order))
-	 (default-directory repo))
-    (add-to-list 'load-path (if (file-exists-p build) build repo))
-    (unless (file-exists-p repo)
-      (make-directory repo t)
-      (when (< emacs-major-version 28) (require 'subr-x))
-      (condition-case-unless-debug err
-	  (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-		   ((zerop (call-process "git" nil buffer t "clone"
-					 (plist-get order :repo) repo)))
-		   ((zerop (call-process "git" nil buffer t "checkout"
-					 (or (plist-get order :ref) "--"))))
-		   (emacs (concat invocation-directory invocation-name))
-		   ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-					 "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-		   ((require 'elpaca))
-		   ((elpaca-generate-autoloads "elpaca" repo)))
-	      (progn (message "%s" (buffer-string)) (kill-buffer buffer))
-	    (error "%s" (with-current-buffer buffer (buffer-string))))
-	((error) (warn "%s" err) (delete-directory repo 'recursive))))
-    (unless (require 'elpaca-autoloads nil t)
-      (require 'elpaca)
-      (elpaca-generate-autoloads "elpaca" repo)
-      (load "./elpaca-autoloads")))
-  (add-hook 'after-init-hook #'elpaca-process-queues)
-  (elpaca `(,@elpaca-order))
+  (custom-set-variables
+   '(package-archives
+     '(("gnu"          . "https://mirrors.ustc.edu.cn/elpa/gnu/")
+       ("nongnu"       . "https://mirrors.ustc.edu.cn/elpa/nongnu/")
+       ("melpa-stable" . "https://mirrors.ustc.edu.cn/elpa/stable-melpa/")
+       ("melpa"        . "https://mirrors.ustc.edu.cn/elpa/melpa/")))
+   '(package-archive-priorities
+     '(("gnu"          . 4)
+       ("nongnu"       . 3)
+       ("melpa-stable" . 2)
+       ("melpa"        . 1))))
 #+end_src
 
-** =use-package= support
-
-The first sexp initializes the elpaca-use-package mode, which provides support
-for the use-package macro in Elpaca.  This means that whenever a package is
-added using Elpaca, it will also configure it to be used with the =use-package=
-macro.  This allows for easier and more consistent package configuration in
-Emacs.  =(elpaca-wait)= ensures that all asynchronous Elpaca package operations
-finish before continuing with the rest of the Emacs configuration.
-
 #+begin_src emacs-lisp
-  (elpaca elpaca-use-package
-    (elpaca-use-package-mode)
-    (setq elpaca-use-package-by-default t))
-  (elpaca-wait)
+  (package-initialize)
 #+end_src
 
-** =use-feature= macro
-
-This macro, =use-feature=, works like =use-package= but it accommodates the
-asynchronous package installation process facilitated by Elpaca.  It creates a
-new =use-package= form that does not use Elpaca's asynchronous handling,
-ensuring all settings and configurations of a package are loaded before use.
-This macro is useful for maintaining a synchronous order in the configuration
-when required.
+** =use-package= macro
 
 #+begin_src emacs-lisp
-  (defmacro use-feature (name &rest args)
-    "Like `use-package' but accounting for asynchronous installation.
-    NAME and ARGS are in `use-package'."
-    (declare (indent defun))
-    `(use-package ,name
-       :elpaca nil
-       ,@args))
+  (require 'package)
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+  (require 'use-package)
+#+end_src
+
+#+begin_src emacs-lisp
+  (custom-set-variables
+   '(use-package-always-ensure t)
+   '(use-package-always-demand t))
 #+end_src
 
 ** Load =exec-path= from shell
 
-This snippet installs and initializes the =exec-path-from-shell= package on
-MacOS systems.  This package ensures that Emacs uses the same PATH environment
-variable as your shell.
+This snippet installs and initializes the =exec-path-from-shell=
+package on MacOS systems.  This package ensures that Emacs uses the
+same PATH environment variable as your shell.
 
 #+begin_src emacs-lisp
   (use-package exec-path-from-shell
-    :if (eq system-type 'darwin)
-    :init (exec-path-from-shell-initialize))
-  (elpaca-wait)
+    :when (eq system-type 'darwin)
+    :config (exec-path-from-shell-initialize))
 #+end_src
 
 ** Hide mode line lighter
@@ -102,15 +56,64 @@ The =diminish= package is installed to hide or minimize minor mode indicators.
 
 #+begin_src emacs-lisp
   (use-package diminish
-    :init
-    (diminish 'visual-line-mode)
-    (diminish 'line-number-mode)
     :hook
     (eldoc-mode   . (lambda () (diminish 'eldoc-mode)))
-    (flymake-mode . (lambda () (diminish 'flymake-mode))))
+    (flymake-mode . (lambda () (diminish 'flymake-mode)))
+    (org-src-mode . (lambda () (diminish 'org-src-mode)))
+    :config
+    (diminish 'visual-line-mode)
+    (diminish 'line-number-mode))
 #+end_src
 
 * Basic Configuration
+
+** UI configurations
+
+This snippet customizes various visual and scrolling settings in Emacs:
+
+#+begin_src emacs-lisp
+  (custom-set-variables
+     ;; Disable scroll bar
+     '(scroll-bar-mode nil)
+
+     ;; Disable tool bar
+     '(tool-bar-mode nil)
+
+     ;; Enable highlighting of the current line
+     '(global-hl-line-mode t)
+
+     ;; Enable visual line mode for wrapping long lines
+     '(global-visual-line-mode t)
+
+     ;; Enable line number display in all buffers
+     '(global-display-line-numbers-mode t)
+
+     ;; Disable mode line lighter for line numbers
+     '(line-number-mode nil)
+
+     ;; Preserve cursor position when scrolling
+     '(scroll-preserve-screen-position t)
+
+     ;; Specify the threshold for scrolling the window by lines instead of pixels
+     '(scroll-conservatively 101)
+
+     ;; Specify the number of lines to keep visible above and below the cursor
+     ;; when scrolling
+     '(scroll-margin 32)
+
+     ;; Set default frame attributes
+     '(default-frame-alist '((width . 88) (height . 24))))
+#+end_src
+
+The =ef-themes= package provides a collection of custom Emacs themes that you
+can use to customize the visual appearance of your Emacs editor.  These themes
+offer different color schemes and styles to enhance your coding experience.
+
+#+begin_src emacs-lisp
+  (use-package ef-themes
+    :custom (ef-themes-region '(no-extend))
+    :config (load-theme 'ef-summer t))
+#+end_src
 
 ** Dired
 
@@ -126,9 +129,9 @@ the =DIRED_LS_OPTS= environment variable.
     (setq insert-directory-program
 	  (shell-command-to-string "which ls | tr -d '\n'"))
     (let* ((ls-opts (getenv "DIRED_LS_OPTS")))
-      (if ls-opts
-	  (custom-set-variables
-	   '(dired-listing-switches ls-opts)))))
+      (when ls-opts
+	(custom-set-variables
+	 '(dired-listing-switches ls-opts)))))
   (jess/config-dired-external-ls)
 #+end_src
 
@@ -200,7 +203,8 @@ also defines key bindings in =dired-mode-map= for convenient file and directory
 navigation using =RET= and =^= keys.
 
 #+begin_src emacs-lisp
-  (use-feature dired
+  (use-package dired
+    :ensure nil
     :hook
     (dired-mode . jess/prefix-dired-buffers)
     :bind
@@ -214,7 +218,8 @@ This code snippet enables file omission in =dired= mode by customizing the
 =jess/dired-omit-files= value to specify the files to be omitted.
 
 #+begin_src emacs-lisp
-  (use-feature dired-x
+  (use-package dired-x
+    :ensure nil
     :after dired
     :custom
     (dired-omit-files jess/dired-omit-files)
@@ -244,7 +249,7 @@ directory to organize backup, auto-save, and lock files:
   (make-directory jess/lock-directory 'parents)
 
   (defconst jess/custom-file
-    (expand-file-name "custom.el" temporary-file-directory))
+    (expand-file-name "custom.el" jess/aux-directory))
 #+end_src
 
 *** Backup files
@@ -309,73 +314,13 @@ This snippet customizes Emacs settings specifically for macOS systems.  If the
 system type is "darwin" (macOS).
 
 #+begin_src emacs-lisp
-  (if (eq system-type 'darwin)
+  (when (eq system-type 'darwin)
     (custom-set-variables
      '(mac-pass-command-to-system nil)
      '(mac-pass-control-to-system nil)
      '(mac-command-modifier nil)
      '(mac-option-modifier 'super)
      '(mac-right-option-modifier 'meta)))
-#+end_src
-
-** Key binding to load init file
-
-This keybinding allows you to quickly reload your Emacs configuration while
-working within Emacs itself.
-
-#+begin_src emacs-lisp
-  (global-set-key (kbd "s-i")
-		  (lambda () (interactive) (load-file user-init-file)))
-#+end_src
-
-** UI configurations
-
-This snippet customizes various visual and scrolling settings in Emacs:
-
-#+begin_src emacs-lisp
-  (custom-set-variables
-     ;; Disable scroll bar
-     '(scroll-bar-mode nil)
-
-     ;; Disable tool bar
-     '(tool-bar-mode nil)
-
-     ;; Enable highlighting of the current line
-     '(global-hl-line-mode t)
-
-     ;; Enable visual line mode for wrapping long lines
-     '(global-visual-line-mode t)
-
-     ;; Enable line number display in all buffers
-     '(global-display-line-numbers-mode t)
-
-     ;; Disable mode line lighter for line numbers
-     '(line-number-mode nil)
-
-     ;; Preserve cursor position when scrolling
-     '(scroll-preserve-screen-position t)
-
-     ;; Specify the threshold for scrolling the window by lines instead of pixels
-     '(scroll-conservatively 101)
-
-     ;; Specify the number of lines to keep visible above and below the cursor
-     ;; when scrolling
-     '(scroll-margin 32)
-
-     ;; Set default frame attributes
-     '(default-frame-alist '((width . 88) (height . 24))))
-#+end_src
-
-The =ef-themes= package provides a collection of custom Emacs themes that you
-can use to customize the visual appearance of your Emacs editor.  These themes
-offer different color schemes and styles to enhance your coding experience.
-
-#+begin_src emacs-lisp
-  (use-package ef-themes
-    :custom
-    (ef-themes-region '(no-extend))
-    :hook
-    (elpaca-after-init . (lambda () (load-theme 'ef-summer t))))
 #+end_src
 
 ** Minibuffer configurations
@@ -413,7 +358,6 @@ save the recentf list.
    '(recentf-max-saved-items 256)
    '(recentf-auto-cleanup 'never)
    '(recentf-mode t))
-  (global-set-key (kbd "s-r") 'recentf-open-files)
   (run-at-time nil (* 3 60) 'recentf-save-list)
 #+end_src
 
@@ -467,7 +411,7 @@ in Emacs, allowing you to easily switch between previously saved window
 arrangements.
 
 #+begin_src emacs-lisp
-  (use-feature winner
+  (use-package winner
     :custom (winner-mode t))
 #+end_src
 
@@ -478,7 +422,7 @@ such as command history, minibuffer history, and search history, across Emacs
 sessions.
 
 #+begin_src emacs-lisp
-  (use-feature savehist
+  (use-package savehist
     :custom (savehist-mode t))
 #+end_src
 
@@ -490,7 +434,8 @@ This code snippet configures key bindings for the =forward-to-word= and
 =backward-to-word= functions in Emacs.
 
 #+begin_src emacs-lisp
-  (use-feature misc
+  (use-package misc
+    :ensure nil
     :bind
     ("M-F" . forward-to-word)
     ("M-B" . backward-to-word))
@@ -520,6 +465,7 @@ easier to type and navigate code with suggestions and completions.
 #+begin_src emacs-lisp
   (use-package company
     :diminish
+    :pin melpa
     :custom
     ;; Configurations File
     (company-minimum-prefix-length 1)
@@ -600,14 +546,33 @@ These configurations provide key bindings, hooks, and customizations to enhance
 the functionality and behavior of the =vterm= package in Emacs.
 
 #+begin_src emacs-lisp
+  (with-eval-after-load
+      (defun jess/vterm-copy-mode-copy (arg)
+	"Same to `vterm-copy-mode-done' but not exit `vterm-copy-mode'."
+	(interactive "P")
+	(unless vterm-copy-mode
+	  (user-error "This command is effective only in vterm-copy-mode"))
+	(unless (use-region-p)
+	  (goto-char (vterm--get-beginning-of-line))
+	  ;; Are we excluding the prompt?
+	  (if (or (and vterm-copy-exclude-prompt (not arg))
+		  (and (not vterm-copy-exclude-prompt) arg))
+	      (goto-char (max (or (vterm--get-prompt-point) 0)
+			      (vterm--get-beginning-of-line))))
+	  (set-mark (point))
+	  (goto-char (vterm--get-end-of-line)))
+	(kill-ring-save (region-beginning) (region-end))))
+#+end_src
+
+#+begin_src emacs-lisp
   (use-package vterm
     :bind
     (("s-t" . vterm)
      :map vterm-mode-map
      ("C-q"   . vterm-send-next-key)
-     ("C-M-v" . nil)
+     ("C-M-v" . nil) ;; Avoid shadowing
      :map vterm-copy-mode-map
-     ("M-w" . vterm-copy-mode-done))
+     ("M-w" . jess/vterm-copy-mode-copy))
     :hook
     (vterm-mode . jess/disable-line-num-and-hl)
     :custom
@@ -640,8 +605,7 @@ and efficient display of completion candidates.
   (use-package vertico
     :custom
     (vertico-count 16)
-    :hook
-    (elpaca-after-init . vertico-mode))
+    (vertico-mode t))
 #+end_src
 
 *** Orderless
@@ -654,12 +618,10 @@ flexibility and effectiveness of Emacs completion.
 
 #+begin_src emacs-lisp
   (use-package orderless
-    :hook
-    (elpaca-after-init
-     . (lambda ()
-	 (setq completion-styles '(orderless basic)
-	       completion-category-defaults nil
-	       completion-category-overrides '((file (styles partial-completion)))))))
+    :custom
+    (completion-styles '(orderless basic))
+    (completion-category-defaults nil)
+    (completion-category-overrides '((file (styles partial-completion)))))
 #+end_src
 
 *** Marginalia
@@ -669,8 +631,7 @@ annotations for completion candidates.
 
 #+begin_src emacs-lisp
   (use-package marginalia
-    :hook
-    (elpaca-after-init . marginalia-mode))
+    :custom (marginalia-mode t))
 #+end_src
 
 *** Consult
@@ -683,59 +644,52 @@ buffers, searching, navigating to specific lines, and accessing history.
     :custom
     (xref-show-xrefs-function consult-xref)
     (xref-show-definitions-function consult-xref)
+    (register-preview-delay 0.5)
     :hook
     (completion-list-mode . consult-preview-at-point-mode)
-    ;; Replace bindings. Lazily loaded due by `use-package'.
+    :init 
+    (setq register-preview-function #'consult-register-format)
+    (advice-add #'register-preview :override #'consult-register-window)
     :bind
-    (;; C-c bindings in `mode-specific-map'
-     ("C-c M-x" . consult-mode-command)
-     ("C-c h"   . consult-history)
-     ("C-c k"   . consult-kmacro)
-     ("C-c m"   . consult-man)
-     ("C-c i"   . consult-info)
-     ([remap Info-search] . consult-info)
-     ;; C-x bindings in `ctl-x-map'
-     ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-     ("C-x b"   . consult-buffer)              ;; orig. switch-to-buffer
-     ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-     ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
-     ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
-     ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
-     ;; Other custom bindings
-     ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-     ;; M-g bindings in `goto-map'
-     ("M-g e"   . consult-compile-error)
-     ("M-g f"   . consult-flymake)             ;; Alternative: consult-flycheck
-     ("M-g g"   . consult-goto-line)           ;; orig. goto-line
-     ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-     ("M-g o"   . consult-outline)             ;; Alternative: consult-org-heading
-     ("M-g m"   . consult-mark)
-     ("M-g k"   . consult-global-mark)
-     ("M-g i"   . consult-imenu)
-     ("M-g I"   . consult-imenu-multi)
-     ;; M-s bindings in `search-map'
-     ("M-s d" . consult-find)
-     ("M-s D" . consult-locate)
-     ("M-s g" . consult-grep)
-     ("M-s G" . consult-git-grep)
-     ("M-s r" . consult-ripgrep)
+    (("C-c g"   . consult-grep)
+     ("C-c f"   . consult-find)
+     ("C-c b"   . consult-bookmark)
+     ("C-c o"   . consult-outline)
+     ("C-c m"   . consult-mark)
+     ("C-c M"   . consult-global-mark)
+     ("C-c i"   . consult-imenu)
+     ("C-c I"   . consult-imenu-multi)
+     ("C-c l"   . consult-line)
+     ("C-c L"   . consult-line-multi)
+     ("C-c r l" . consult-register-load)
+     ("C-c r s" . consult-register-store)
+     ("C-c r r" . consult-register)
+
+     ("C-c c M-x" . consult-mode-command)
+     ("C-c c h"   . consult-history)
+     ("C-c c k"   . consult-kmacro)
+     ("C-c c m"   . consult-man)
+     ("C-c c i"   . consult-info)
+     ("C-c c s"   . consult-isearch-history)
+
+     ;; Shadowing original key bindings
+     ("C-x b"   . consult-buffer)
+     ("C-x o"   . consult-buffer-other-window)
+     ("C-x p b" . consult-project-buffer)
+     ("C-x p g" . consult-ripgrep)
+     ("M-y"     . consult-yank-pop)
+     ("M-g g"   . consult-goto-line)
+     ("M-g M-g" . consult-goto-line)
+
+     :map isearch-mode-map
+     ("M-e"   . consult-isearch-history)
+     ("M-s e" . consult-isearch-history)
      ("M-s l" . consult-line)
      ("M-s L" . consult-line-multi)
-     ("M-s k" . consult-keep-lines)
-     ("M-s u" . consult-focus-lines)
-     ("C-s"   . consult-line)
-     ;; Isearch integration
-     ("M-s e" . consult-isearch-history)
-     :map isearch-mode-map
-     ("M-e"   . consult-isearch-history)       ;; orig. isearch-edit-string
-     ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
-     ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
-     ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
-     ;; Minibuffer history
+
      :map minibuffer-local-map
-     ("M-s" . consult-history)                 ;; orig. next-matching-history-element
-     ("M-r" . consult-history))                ;; orig. previous-matching-history-element
-    )
+     ("M-s" . consult-history)
+     ("M-r" . consult-history)))
 #+end_src
 
 ** Misc
@@ -762,10 +716,7 @@ for =smartparens= after Emacs initialization.
 #+begin_src emacs-lisp
   (use-package smartparens
     :diminish
-    :hook
-    (prog-mode . smartparens-mode)
-    (elpaca-after-init . (lambda ()
-			   (require 'smartparens-config))))
+    :custom (smartparens-global-mode t))
 #+end_src
 
 Lines are wrapped at the 80th column for better readability and formatting.
@@ -799,38 +750,6 @@ AI-powered code completions for various programming languages.
     (add-to-list 'company-backends #'company-tabnine))
 #+end_src
 
-*** ChatGPT
-
-The following function retrieves the OpenAI API key named "openai" from the
-macOS keychain.
-
-#+begin_src emacs-lisp
-  (defun jess/config-openai ()
-    (if (eq system-type 'darwin)
-	(progn
-	  (load-file (expand-file-name "lisp/utils.el" user-emacs-directory))
-	  (setq openai-key (jess/get-macos-keychain-password "openai")))
-      (message "System type mismatch, required: darwin")))
-#+end_src
-
-The following code setups ChatGPT for Emacs.  The package =openai= must be
-installed and configured before the =chatgpt= package.
-
-#+begin_src emacs-lisp
-  (use-package openai
-    :elpaca
-    (:type git :host github :repo "emacs-openai/openai")
-    :config
-    (jess/config-openai))
-#+end_src
-
-#+begin_src emacs-lisp
-  (use-package chatgpt
-    :after openai
-    :elpaca
-    (:type git :host github :repo "emacs-openai/chatgpt"))
-#+end_src
-
 ** Window and buffer management
 
 *** Window switch key bindings
@@ -849,14 +768,10 @@ You can easily switch between windows in Emacs using =M-o= to move forward and
 ** Language server protocol - Eglot
 
 This code snippet configures the =eglot= package in Emacs to enable enhanced
-cross-referencing capabilities.  To ensure proper functionality, it first
-installs the =project= package via =elpaca= since =eglot= does not work with the
-default built-in =project= library.
+cross-referencing capabilities.
 
 #+begin_src emacs-lisp
-  (use-package project)
   (use-package eglot
-    :after project
     :hook
     (c++-mode    . eglot-ensure)
     (python-mode . eglot-ensure)
@@ -871,19 +786,48 @@ default built-in =project= library.
 #+begin_src emacs-lisp
   (defconst jess/c++-lsp-server
     '("clangd"
-      "-j 8"                        ;; Number of threads for background indexing
-      "--background-index"          ;; Enables background indexing
-      "--clang-tidy"                ;; Enables Clang-Tidy static analysis
-      "--cross-file-rename"         ;; Enables cross-file renaming of symbols
-      "--completion-style=detailed" ;; Configures detailed completion style
-      "--pch-storage=memory")       ;; Sets precompiled header storage to memory
-    )
+      ;; Enables completion in all scopes
+      "--all-scopes-completion"
+
+      ;; Sets the priority of background indexing to normal
+      "--background-index-priority=normal"
+
+      ;; Enables background indexing
+      "--background-index"
+
+      ;; Enables Clang-Tidy static analysis
+      "--clang-tidy"
+
+      ;; Configures detailed completion style
+      "--completion-style=detailed"
+
+      ;; Performs header insertion using IWYU
+      "--header-insertion=iwyu"
+
+      ;; Limits the number of references to show (0 means unlimited)
+      "--limit-references=0"
+
+      ;; Limits the number of results to show (0 means unlimited)
+      "--limit-results=0"
+
+      ;; Limits the number of file renames (0 means unlimited)
+      "--rename-file-limit=0"
+
+      ;; Sets precompiled header storage to memory
+      "--pch-storage=memory"
+
+      ;; Enables verbose logging (adjust level as needed)
+      "--log=verbose"
+
+      ;; Number of threads for background indexing
+      "-j=8"
+      ))
 #+end_src
 
 #+begin_src emacs-lisp
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
-		 `(c++-mode ,jess/c++-lsp-server)))
+		 `(c++-mode . ,jess/c++-lsp-server)))
 #+end_src
 
 *** Python
@@ -936,8 +880,10 @@ environment when entering =python-mode=.
 
 #+begin_src emacs-lisp
   (use-package pdf-tools
+    :hook
+    (pdf-view-mode . jess/disable-line-num-and-hl)
     :config
     (pdf-tools-install)  ;; Install and set up dependencies
     (pdf-loader-install) ;; Install support for efficient loading and rendering
-    (add-hook 'pdf-view-mode-hook 'jess/disable-line-num-and-hl))
+    )
 #+end_src
