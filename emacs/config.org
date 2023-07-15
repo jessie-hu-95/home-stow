@@ -126,13 +126,16 @@ the =DIRED_LS_OPTS= environment variable.
 
 #+begin_src emacs-lisp
   (defun jess/config-dired-external-ls ()
-    (setq insert-directory-program
-	  (shell-command-to-string "which ls | tr -d '\n'"))
-    (let* ((ls-opts (getenv "DIRED_LS_OPTS")))
-      (when ls-opts
-	(custom-set-variables
-	 '(dired-listing-switches ls-opts)))))
-  (jess/config-dired-external-ls)
+    (when-let ((executable (executable-find "ls"))
+	       (ls-opts (getenv "DIRED_LS_OPTS")))
+      (setq insert-directory-program executable)
+      (custom-set-variables
+       `(dired-listing-switches ,ls-opts))))
+#+end_src
+
+#+begin_src emacs-lisp
+  (with-eval-after-load 'exec-path-from-shell
+    (jess/config-dired-external-ls))
 #+end_src
 
 *** Reusing Dired buffer
