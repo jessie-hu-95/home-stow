@@ -102,7 +102,7 @@ This snippet customizes various visual and scrolling settings in Emacs:
      '(scroll-margin 32)
 
      ;; Set default frame attributes
-     '(default-frame-alist '((width . 88) (height . 24))))
+     '(default-frame-alist '((width . 88) (height . 32))))
 #+end_src
 
 The =ef-themes= package provides a collection of custom Emacs themes that you
@@ -112,7 +112,18 @@ offer different color schemes and styles to enhance your coding experience.
 #+begin_src emacs-lisp
   (use-package ef-themes
     :custom (ef-themes-region '(no-extend))
-    :config (load-theme 'ef-summer t))
+    :config (load-theme 'ef-trio-light t))
+#+end_src
+
+#+begin_src emacs-lisp
+  (custom-set-faces
+   '(default
+      ((t (:family "Lucida Grande Mono DK"
+	   :foundry "nil"
+	   :slant normal
+	   :weight normal
+	   :height 130
+	   :width semi-condensed)))))
 #+end_src
 
 ** Dired
@@ -677,7 +688,6 @@ buffers, searching, navigating to specific lines, and accessing history.
 
      ;; Shadowing original key bindings
      ("C-x b"   . consult-buffer)
-     ("C-x o"   . consult-buffer-other-window)
      ("C-x p b" . consult-project-buffer)
      ("C-x p g" . consult-ripgrep)
      ("M-y"     . consult-yank-pop)
@@ -755,15 +765,62 @@ AI-powered code completions for various programming languages.
 
 ** Window and buffer management
 
-*** Window switch key bindings
-
-You can easily switch between windows in Emacs using =M-o= to move forward and
-=M-O= to move backward.
+*** Jumping around between windows
 
 #+begin_src emacs-lisp
-  (global-set-key (kbd "M-o") 'other-window)
-  (global-set-key (kbd "M-O")
-		  (lambda () (interactive) (other-window -1)))
+  (use-package ace-window
+    :bind
+    ("M-o" . ace-select-window)
+    ("s-o" . ace-window)
+    :custom
+    (aw-dispatch-always t)
+    (aw-display-mode-overlay nil)
+    (aw-background nil)
+    (aw-keys '(?n ?e ?h ?s ?i ?a))
+    :config
+    (define-minor-mode ace-window-display-mode
+      "The function is same to ace-window-display-mode except
+  displaying format of the avy-char."
+      :global t
+      (if ace-window-display-mode
+	  (progn
+	    (aw-update)
+	    (set-default
+	     'mode-line-format
+	     `((ace-window-display-mode
+		;; Show avy-char in upcase wrapped in brackets
+		(:eval (format "[%s]"
+			       (upcase (window-parameter
+					(selected-window) 'ace-window-path)))))
+	       ,@(assq-delete-all
+		  'ace-window-display-mode
+		  (default-value 'mode-line-format))))
+	    (force-mode-line-update t)
+	    (add-hook 'window-configuration-change-hook 'aw-update)
+	    ;; Add at the end so does not precede select-frame call.
+	    (add-hook 'after-make-frame-functions #'aw--after-make-frame t))
+	(set-default
+	 'mode-line-format
+	 (assq-delete-all
+	  'ace-window-display-mode
+	  (default-value 'mode-line-format)))
+	(remove-hook 'window-configuration-change-hook 'aw-update)
+	(remove-hook 'after-make-frame-functions 'aw--after-make-frame)))
+    (setq aw-dispatch-alist
+	  '((?0 aw-delete-window "Delete Window")
+	    (?t aw-swap-window "Swap Windows")
+	    (?m aw-move-window "Move Window")
+	    (?y aw-copy-window "Copy Window")
+	    (?b aw-switch-buffer-in-window "Select Buffer")
+	    (?4 aw-switch-buffer-other-window "Switch Buffer Other Window")
+	    (?! aw-execute-command-other-window "Execute Command Other Window")
+	    (?= aw-split-window-fair "Split Fair Window")
+	    (?- aw-split-window-vert "Split Vert Window")
+	    (?| aw-split-window-horz "Split Horz Window")
+	    (?1 delete-other-windows "Delete Other Windows")
+	    (?f aw-flip-window)
+	    (?? aw-show-dispatch-help)))
+    (ace-window-display-mode))
 #+end_src
 
 * Manipulate Different Types of Files
