@@ -768,19 +768,35 @@ AI-powered code completions for various programming languages.
 *** Jumping around between windows
 
 #+begin_src emacs-lisp
+  (defun jess/ace-select-window (arg)
+    "Mimic the `ace-window' command.  The difference is when prefixed
+  with one \\[universal-argument], ace actions are always
+  dispatched."
+    (interactive "p")
+    (setq avy-current-path "")
+    (cl-case arg
+      (0
+       (let ((aw-ignore-on (not aw-ignore-on)))
+	 (ace-select-window)))
+      (4
+       (let ((aw-ignore-on (not aw-ignore-on))
+	     (aw-dispatch-always t))
+	 (ace-select-window)))
+      (t
+       (ace-select-window))))
+
   (use-package ace-window
     :bind
-    ("M-o" . ace-select-window)
-    ("s-o" . ace-window)
+    ("M-o" . jess/ace-select-window)
     :custom
-    (aw-dispatch-always t)
+    (aw-dispatch-when-more-than 3)
     (aw-display-mode-overlay nil)
     (aw-background nil)
     (aw-keys '(?n ?e ?h ?s ?i ?a))
     :config
     (define-minor-mode ace-window-display-mode
-      "The function is same to ace-window-display-mode except
-  displaying format of the avy-char."
+      "The function is same to ace-window-display-mode despite the mode
+      line format of the avy-char."
       :global t
       (if ace-window-display-mode
 	  (progn
