@@ -99,7 +99,7 @@ This snippet customizes various visual and scrolling settings in Emacs:
 
      ;; Specify the number of lines to keep visible above and below the cursor
      ;; when scrolling
-     '(scroll-margin 32)
+     '(scroll-margin 10)
 
      ;; Set default frame attributes
      '(default-frame-alist '((width . 88) (height . 32))))
@@ -333,7 +333,7 @@ system type is "darwin" (macOS).
      '(mac-pass-command-to-system nil)
      '(mac-pass-control-to-system nil)
      '(mac-command-modifier nil)
-     '(mac-option-modifier 'super)
+     '(mac-option-modifier 'hyper)
      '(mac-right-option-modifier 'meta)))
 #+end_src
 
@@ -496,7 +496,7 @@ easier to type and navigate code with suggestions and completions.
     (company-text-icons-add-background t)
     (company-show-quick-access t)
     ;; Quick Access a Candidate
-    (company-quick-access-modifier 'super)
+    (company-quick-access-modifier 'hyper)
     (company-quick-access-keys
      '("n" "t" "e" "h" "o" "s" "i" "a" "u" "r" "p" "d" "l" "c" "y" "g")))
 #+end_src
@@ -531,9 +531,20 @@ navigation and sets keybindings for quick jumping in the buffer.
     (avy-keys
      '(?n ?t ?e ?h ?o ?s ?i ?a ?u ?r ?p ?d ?l ?c ?y ?g))
     :bind
-    ("s-SPC" . avy-goto-char-timer)
-    ("s-["   . avy-goto-char)
-    ("s-]"   . jess/avy-goto-next-char))
+    (("H-SPC" . avy-goto-char-timer)
+     ("H-p"   . avy-goto-char)
+     ("H-n"   . jess/avy-goto-next-char)
+     :map isearch-mode-map
+     ("H-s" . avy-isearch)))
+#+end_src
+
+*** Region selection
+
+#+begin_src emacs-lisp
+  (use-package expand-region
+    :bind
+    ("H-e" . er/expand-region)
+    ("H-o" . er/contract-region))
 #+end_src
 
 *** Terminal emulator
@@ -581,7 +592,7 @@ the functionality and behavior of the =vterm= package in Emacs.
 #+begin_src emacs-lisp
   (use-package vterm
     :bind
-    (("s-t" . vterm)
+    (("H-t" . vterm)
      :map vterm-mode-map
      ("C-q"   . vterm-send-next-key)
      ("C-M-v" . nil) ;; Avoid shadowing
@@ -722,6 +733,12 @@ This code snippet enables moving deleted files to the system's trash folder.
    '(delete-by-moving-to-trash t))
 #+end_src
 
+Disable tabs
+
+#+begin_src emacs-lisp
+  (custom-set-variables '(indent-tabs-mode nil))
+#+end_src
+
 This code snippet configures the =smartparens= package in Emacs.  It enables
 =smartparens-mode= in programming modes and loads the necessary configuration
 for =smartparens= after Emacs initialization.
@@ -729,7 +746,10 @@ for =smartparens= after Emacs initialization.
 #+begin_src emacs-lisp
   (use-package smartparens
     :diminish
-    :custom (smartparens-global-mode t))
+    :custom
+    (smartparens-global-mode t)
+    :config
+    (require 'smartparens-config))
 #+end_src
 
 Lines are wrapped at the 80th column for better readability and formatting.
@@ -746,7 +766,7 @@ providing a unique visual indicator of your scroll position.
     :custom
     (nyan-mode t)
     (nyan-animate-nyancat t)
-    (nyan-bar-length 16))
+    (nyan-bar-length 10))
 #+end_src
 
 ** AI assistant
