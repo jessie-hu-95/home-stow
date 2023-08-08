@@ -662,63 +662,6 @@ annotations for completion candidates.
     :custom (marginalia-mode t))
 #+end_src
 
-*** Consult
-
-=consult= provides improved functionality for commands such as switching
-buffers, searching, navigating to specific lines, and accessing history.
-
-#+begin_src emacs-lisp
-  (use-package consult
-    :custom
-    (xref-show-xrefs-function consult-xref)
-    (xref-show-definitions-function consult-xref)
-    (register-preview-delay 0.5)
-    :hook
-    (completion-list-mode . consult-preview-at-point-mode)
-    :init 
-    (setq register-preview-function #'consult-register-format)
-    (advice-add #'register-preview :override #'consult-register-window)
-    :bind
-    (("C-c g"   . consult-grep)
-     ("C-c f"   . consult-find)
-     ("C-c b"   . consult-bookmark)
-     ("C-c o"   . consult-outline)
-     ("C-c m"   . consult-mark)
-     ("C-c M"   . consult-global-mark)
-     ("C-c i"   . consult-imenu)
-     ("C-c I"   . consult-imenu-multi)
-     ("C-c l"   . consult-line)
-     ("C-c L"   . consult-line-multi)
-     ("C-c r l" . consult-register-load)
-     ("C-c r s" . consult-register-store)
-     ("C-c r r" . consult-register)
-
-     ("C-c c M-x" . consult-mode-command)
-     ("C-c c h"   . consult-history)
-     ("C-c c k"   . consult-kmacro)
-     ("C-c c m"   . consult-man)
-     ("C-c c i"   . consult-info)
-     ("C-c c s"   . consult-isearch-history)
-
-     ;; Shadowing original key bindings
-     ("C-x b"   . consult-buffer)
-     ("C-x p b" . consult-project-buffer)
-     ("C-x p g" . consult-ripgrep)
-     ("M-y"     . consult-yank-pop)
-     ("M-g g"   . consult-goto-line)
-     ("M-g M-g" . consult-goto-line)
-
-     :map isearch-mode-map
-     ("M-e"   . consult-isearch-history)
-     ("M-s e" . consult-isearch-history)
-     ("M-s l" . consult-line)
-     ("M-s L" . consult-line-multi)
-
-     :map minibuffer-local-map
-     ("M-s" . consult-history)
-     ("M-r" . consult-history)))
-#+end_src
-
 ** Misc
 
 This code snippet creates an alias =yes-or-no-p= for the =y-or-n-p= function,
@@ -759,17 +702,6 @@ Lines are wrapped at the 80th column for better readability and formatting.
 
 #+begin_src emacs-lisp
   (custom-set-variables '(fill-column 80))
-#+end_src
-
-=nyan-mode= gives you the whimsical nyan cat animation in your mode-line,
-providing a unique visual indicator of your scroll position.
-
-#+begin_src emacs-lisp
-  (use-package nyan-mode
-    :custom
-    (nyan-mode t)
-    (nyan-animate-nyancat t)
-    (nyan-bar-length 10))
 #+end_src
 
 ** AI assistant
@@ -871,6 +803,7 @@ cross-referencing capabilities.
 
 #+begin_src emacs-lisp
   (use-package eglot
+    :ensure nil
     :hook
     (c++-mode    . eglot-ensure)
     (python-mode . eglot-ensure)
