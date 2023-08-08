@@ -449,15 +449,13 @@ sessions.
 
 *** Some useful key bindings
 
-This code snippet configures key bindings for the =forward-to-word= and
-=backward-to-word= functions in Emacs.
+This code snippet configures key bindings for the =forward-symbol= and
+=backward-symbol= functions in Emacs.
 
 #+begin_src emacs-lisp
-  (use-package misc
-    :ensure nil
-    :bind
-    ("M-F" . forward-to-word)
-    ("M-B" . backward-to-word))
+  (global-set-key (kbd "M-F") 'forward-symbol)
+  (global-set-key (kbd "M-B")
+                  (lambda () (interactive) (forward-symbol -1)))
 #+end_src
 
 *** Which key
@@ -987,4 +985,16 @@ environment when entering =python-mode=.
     (pdf-tools-install)  ;; Install and set up dependencies
     (pdf-loader-install) ;; Install support for efficient loading and rendering
     )
+#+end_src
+
+*** Dockerfile
+
+#+begin_src emacs-lisp
+  (use-package dockerfile-mode)
+#+end_src
+
+*** GitLab CI
+
+#+begin_src emacs-lisp
+  (use-package gitlab-ci-mode)
 #+end_src
