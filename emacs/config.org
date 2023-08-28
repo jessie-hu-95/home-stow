@@ -25,10 +25,6 @@
 ** =use-package= macro
 
 #+begin_src emacs-lisp
-  (require 'package)
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
   (require 'use-package)
 #+end_src
 
@@ -808,7 +804,8 @@ cross-referencing capabilities.
     (c++-mode    . eglot-ensure)
     (python-mode . eglot-ensure)
     :custom
-    (eglot-extend-to-xref t))
+    (eglot-extend-to-xref t)
+    (eglot-report-progress nil))
 #+end_src
 
 ** Configurations for each type of files
