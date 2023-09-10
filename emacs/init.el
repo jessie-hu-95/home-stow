@@ -65,10 +65,14 @@
   ;; Preserve cursor position when scrolling
   (scroll-preserve-screen-position 'always)
   ;; Specify the threshold for scrolling the window by lines instead of pixels
-  (scroll-conservatively 101)
-  ;; Specify the number of lines to keep visible above and below the cursor
-  ;; when scrolling
-  (scroll-margin 10))
+  (scroll-conservatively 101))
+
+(use-package window
+  :ensure nil
+  :custom
+  (display-buffer-alist
+   '(("\\*Completions\\*"
+      (display-buffer-reuse-window display-buffer-at-bottom)))))
 
 (use-package emacs
   :when
@@ -181,7 +185,12 @@
    :map
    completion-in-region-mode-map
    ("C-p" . minibuffer-previous-completion)
-   ("C-n" . minibuffer-next-completion)))
+   ("C-n" . minibuffer-next-completion)
+   ("RET" . minibuffer-choose-completion)))
+
+(use-package marginalia
+  :custom
+  (marginalia-mode t))
 
 (use-package orderless
   :custom
