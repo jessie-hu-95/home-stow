@@ -115,7 +115,9 @@
   (save-place-limit 1024)
   (save-place-mode t)
   ;; Trash
-  (delete-by-moving-to-trash t))
+  (delete-by-moving-to-trash t)
+  ;; Short answer
+  (use-short-answers t))
 
 (use-package emacs
   :ensure nil
