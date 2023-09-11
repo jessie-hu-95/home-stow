@@ -210,6 +210,7 @@
   (global-auto-revert-mode t))
 
 (use-package undo-tree
+  :after no-littering
   :custom
   ;; `undo-tree-history-directory-alist' is set by no-littering
   (global-undo-tree-mode t))
@@ -265,12 +266,13 @@
 
 (use-package corfu
   :custom
-  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-  (corfu-auto t)                 ;; Enable auto completion
-  (corfu-separator ?\s)          ;; Orderless field separator
-  (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-  (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
-  (corfu-preview-current nil)    ;; Disable current candidate preview
-  (corfu-preselect 'prompt)      ;; Preselect the prompt
-  (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+  (corfu-cycle t)
+  (corfu-separator ?\s)
+  (corfu-quit-at-boundary nil)
+  (corfu-preview-current nil)
+  (corfu-preselect 'first)
+  (corfu-on-exact-match 'insert)
+  (corfu-quit-no-match t)
   (global-corfu-mode t))
+
+(use-package eat)
