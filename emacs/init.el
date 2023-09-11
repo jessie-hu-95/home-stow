@@ -275,4 +275,7 @@
   (corfu-quit-no-match t)
   (global-corfu-mode t))
 
-(use-package eat)
+(use-package eat
+  :custom
+  (eat-eshell-mode t)
+  (eat-eshell-visual-command-mode t))
