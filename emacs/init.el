@@ -52,6 +52,10 @@
 (use-package emacs
   :ensure nil
   :custom
+  ;; Start up with scratch buffer
+  (inhibit-startup-screen t)
+  (inhibit-startup-echo-area-message t)
+  (initial-scratch-message nil)
   ;; Disable menu bar
   (menu-bar-mode nil)
   ;; Disable scroll bar
@@ -75,6 +79,7 @@
       (display-buffer-reuse-window display-buffer-at-bottom)))))
 
 (use-package emacs
+  :ensure nil
   :when
   (display-graphic-p)
   :custom
