@@ -76,7 +76,8 @@
   :custom
   (display-buffer-alist
    '(("\\*Completions\\*"
-      (display-buffer-reuse-window display-buffer-at-bottom)))))
+      (display-buffer-reuse-window display-buffer-at-bottom))
+     ("\\*Async Shell Command\\*" display-buffer-no-window))))
 
 (use-package emacs
   :ensure nil
@@ -267,6 +268,7 @@
 (use-package corfu
   :custom
   (corfu-cycle t)
+  (corfu-auto t)
   (corfu-separator ?\s)
   (corfu-quit-at-boundary nil)
   (corfu-preview-current nil)
@@ -279,3 +281,13 @@
   :custom
   (eat-eshell-mode t)
   (eat-eshell-visual-command-mode t))
+
+(defconst jess/lisp-directory
+  (expand-file-name "lisp" user-emacs-directory))
+
+(use-package eglot
+  :ensure nil
+  :custom
+  (eglot-extend-to-xref t))
+
+(load (expand-file-name "lang.el" jess/lisp-directory))
