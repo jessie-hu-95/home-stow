@@ -38,6 +38,8 @@
 (use-package recentf
   :ensure nil
   :after no-littering
+  :bind
+  ("H-r" . recentf-open-files)
   :custom
   (recentf-max-menu-items 64)
   (recentf-max-saved-items 256)
@@ -75,6 +77,19 @@
   :ensure nil
   :hook
   (dired-mode . dired-hide-details-mode))
+
+(use-package view
+  :ensure nil
+  :hook
+  (prog-mode . view-mode)
+  :bind
+  (("H-SPC" . (lambda () (interactive)
+		(unless view-mode (view-mode))))
+   (:map view-mode-map
+	 ("n" . next-line)
+	 ("p" . previous-line)
+	 ("N" . View-search-last-regexp-forward)
+	 ("P" . View-search-last-regexp-backward))))
 
 (use-package window
   :ensure nil
