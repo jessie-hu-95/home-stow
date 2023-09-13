@@ -71,6 +71,11 @@
   ;; Specify the threshold for scrolling the window by lines instead of pixels
   (scroll-conservatively 101))
 
+(use-package dired
+  :ensure nil
+  :hook
+  (dired-mode . dired-hide-details-mode))
+
 (use-package window
   :ensure nil
   :custom
