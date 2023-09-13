@@ -245,9 +245,10 @@
 
 (use-package ace-window
   :bind
-  ("H-o" . ace-select-window)
+  ("H-o" . other-window)
+  ("H-i" . ace-select-window)
   :custom
-  (aw-dispatch-when-more-than 2)
+  (aw-dispatch-always t)
   (aw-display-mode-overlay nil)
   (aw-background nil)
   (aw-keys '(?n ?e ?h ?s ?i ?a))
@@ -284,6 +285,13 @@
   :custom
   (eat-eshell-mode t)
   (eat-eshell-visual-command-mode t))
+
+(use-package emacs
+  :ensure nil
+  :bind
+  ("C-c s" . shell)
+  ("C-c e" . eshell)
+  ("C-c t" . eat))
 
 (defun jess/disable-global-hl-line-mode ()
   (setq-local global-hl-line-mode nil))
