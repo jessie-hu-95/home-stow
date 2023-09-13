@@ -28,8 +28,8 @@
 (use-package emacs
   :ensure nil
   :after no-littering
-  :hook
-  (kill-emacs-query-functions . custom-prompt-customize-unsaved-options)
+  :init
+  (add-hook 'kill-emacs-query-functions 'custom-prompt-customize-unsaved-options)
   :custom
   (custom-file (make-temp-file "emacs-custom"))
   :config
@@ -75,9 +75,7 @@
   :ensure nil
   :custom
   (display-buffer-alist
-   '(("\\*Completions\\*"
-      (display-buffer-reuse-window display-buffer-at-bottom))
-     ("\\*Async Shell Command\\*" display-buffer-no-window))))
+   '(("\\*Async Shell Command\\*" display-buffer-no-window))))
 
 (use-package emacs
   :ensure nil
@@ -281,6 +279,16 @@
   :custom
   (eat-eshell-mode t)
   (eat-eshell-visual-command-mode t))
+
+(defun jess/disable-global-hl-line-mode ()
+  (setq-local global-hl-line-mode nil))
+
+(use-package hl-line
+  :ensure nil
+  :hook
+  (shell-mode  . jess/disable-global-hl-line-mode)
+  (eshell-mode . jess/disable-global-hl-line-mode)
+  (eat-mode    . jess/disable-global-hl-line-mode))
 
 (defconst jess/lisp-directory
   (expand-file-name "lisp" user-emacs-directory))
