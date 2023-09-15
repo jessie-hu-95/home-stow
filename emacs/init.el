@@ -75,32 +75,26 @@
 (use-package dired
   :ensure nil
   :hook
-  (dired-mode . dired-hide-details-mode))
+  (dired-mode . dired-hide-details-mode)
+  :config
+  (put 'dired-find-alternate-file 'disabled nil))
 
 (use-package view
   :ensure nil
+  :config
+  (defun jess/auto-view-mode () (interactive)
+	 (when buffer-file-name (view-mode)))
   :hook
-  (prog-mode . view-mode)
+  (prog-mode . jess/auto-view-mode)
+  (text-mode . jess/auto-view-mode)
   :bind
-  (("H-SPC" . (lambda () (interactive)
-		(unless view-mode (view-mode))))
+  (("H-v" . (lambda () (interactive)
+	      (unless view-mode (view-mode))))
    (:map view-mode-map
 	 ("n" . next-line)
 	 ("p" . previous-line)
 	 ("N" . View-search-last-regexp-forward)
 	 ("P" . View-search-last-regexp-backward))))
-
-(use-package window
-  :ensure nil
-  :custom
-  (display-buffer-alist
-   '(("\\*Async Shell Command\\*" display-buffer-no-window)
-     ("\\*Completions\\*"
-      (display-buffer-reuse-window display-buffer-at-bottom))))
-  :bind
-  (("H-o" . other-window)
-   ("H-n" . scroll-up-line)
-   ("H-p" . scroll-down-line)))
 
 (use-package emacs
   :ensure nil
@@ -119,15 +113,11 @@
   :config
   (set-face-attribute 'default nil :font "Lucida Grande Mono DK"))
 
-(use-package ef-themes
+(use-package emacs
   :when
   (display-graphic-p)
-  :custom
-  (ef-themes-region '(no-extend))
   :config
-  (load-theme 'ef-trio-light 'no-confirm))
-
-(put 'dired-find-alternate-file 'disabled nil)
+  (load-theme 'modus-operandi))
 
 (use-package emacs
   :ensure nil
@@ -239,10 +229,30 @@
   ;; `undo-tree-history-directory-alist' is set by no-littering
   (global-undo-tree-mode t))
 
-(use-package winner
+(use-package simple
+  :ensure nil
+  :bind
+  ("H-0" . kill-current-buffer)
+  ("H-k" . kill-whole-line))
+
+(use-package misc
+  :ensure nil
+  :bind
+  ("H-z" . zap-up-to-char))
+
+(use-package window
   :ensure nil
   :custom
-  (winner-mode t))
+  (display-buffer-alist
+   '(("\\*Async Shell Command\\*" display-buffer-no-window)
+     ("\\*Completions\\*"
+      (display-buffer-reuse-window display-buffer-at-bottom))))
+  :bind
+  (("H-o" . other-window)
+   ("H-n" . scroll-up-line)
+   ("H-p" . scroll-down-line)
+   ("H-," . switch-to-prev-buffer)
+   ("H-." . switch-to-next-buffer)))
 
 (use-package windmove
   :ensure nil
@@ -258,10 +268,15 @@
 (use-package emacs
   :ensure nil
   :bind
+  ("H-SPC" . forward-whitespace)
   ("H-f"   . forward-symbol)
   ("H-b"   . (lambda (arg) (interactive "^p")
-	       (progn (setq arg (- arg))
-		      (forward-symbol arg)))))
+	       (forward-symbol (- arg)))))
+
+(use-package winner
+  :ensure nil
+  :custom
+  (winner-mode t))
 
 (use-package avy
   :custom
@@ -311,13 +326,26 @@
   :custom
   (corfu-cycle t)
   (corfu-auto t)
+  (corfu-auto-prefix 2)
   (corfu-separator ?\s)
   (corfu-quit-at-boundary nil)
   (corfu-preview-current nil)
   (corfu-preselect 'first)
   (corfu-on-exact-match 'insert)
   (corfu-quit-no-match t)
-  (global-corfu-mode t))
+  (global-corfu-mode t)
+  (corfu-auto-delay 0.1)
+  (corfu-popupinfo-delay '(0.5 . 0.2)))
+
+(use-package corfu-popupinfo
+  :ensure nil
+  :after corfu
+  :hook
+  (corfu-mode . corfu-popupinfo-mode)
+  :bind
+  (:map corfu-popupinfo-map
+	("M-n" . corfu-popupinfo-scroll-up)
+	("M-p" . corfu-popupinfo-scroll-down)))
 
 (use-package eat
   :custom
