@@ -39,7 +39,7 @@
   :ensure nil
   :after no-littering
   :bind
-  ("H-r" . recentf-open-files)
+  ("C-c r" . recentf-open-files)
   :custom
   (recentf-max-menu-items 64)
   (recentf-max-saved-items 256)
@@ -57,7 +57,6 @@
   ;; Start up with scratch buffer
   (inhibit-startup-screen t)
   (inhibit-startup-echo-area-message t)
-  (initial-scratch-message nil)
   ;; Disable menu bar
   (menu-bar-mode nil)
   ;; Disable scroll bar
@@ -95,7 +94,13 @@
   :ensure nil
   :custom
   (display-buffer-alist
-   '(("\\*Async Shell Command\\*" display-buffer-no-window))))
+   '(("\\*Async Shell Command\\*" display-buffer-no-window)
+     ("\\*Completions\\*"
+      (display-buffer-reuse-window display-buffer-at-bottom))))
+  :bind
+  (("H-o" . other-window)
+   ("H-n" . scroll-up-line)
+   ("H-p" . scroll-down-line)))
 
 (use-package emacs
   :ensure nil
@@ -173,11 +178,11 @@
   (when-let ((window (active-minibuffer-window)))
     (with-current-buffer (window-buffer window)
       (completion-metadata-get
-       (completion-metadata (buffer-substring-no-properties
-                             (minibuffer-prompt-end)
-                             (max (minibuffer-prompt-end) (point)))
-                            minibuffer-completion-table
-                            minibuffer-completion-predicate)
+       (completion-metadata
+	(buffer-substring-no-properties (minibuffer-prompt-end)
+					(max (minibuffer-prompt-end) (point)))
+        minibuffer-completion-table
+        minibuffer-completion-predicate)
        'category))))
 
 (defun jess/sort-multi-category (elems)
@@ -239,6 +244,25 @@
   :custom
   (winner-mode t))
 
+(use-package windmove
+  :ensure nil
+  :custom
+  (windmove-mode t)
+  :bind
+  (:map windmove-mode-map
+	("H-l" . windmove-left)
+	("H-r" . windmove-right)
+	("H-u" . windmove-up)
+	("H-d" . windmove-down)))
+
+(use-package emacs
+  :ensure nil
+  :bind
+  ("H-f"   . forward-symbol)
+  ("H-b"   . (lambda (arg) (interactive "^p")
+	       (progn (setq arg (- arg))
+		      (forward-symbol arg)))))
+
 (use-package avy
   :custom
   (avy-keys
@@ -250,8 +274,8 @@
 
 (use-package expand-region
   :bind
-  ("H-u" . er/expand-region)
-  ("H-d" . er/contract-region))
+  ("H-e" . er/expand-region)
+  ("H-c" . er/contract-region))
 
 (use-package electric
   :ensure nil
@@ -260,8 +284,7 @@
 
 (use-package ace-window
   :bind
-  ("H-o" . other-window)
-  ("H-i" . ace-select-window)
+  ("H-a" . ace-select-window)
   :custom
   (aw-dispatch-always t)
   (aw-display-mode-overlay nil)
