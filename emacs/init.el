@@ -116,6 +116,13 @@
 (use-package emacs
   :when
   (display-graphic-p)
+  :custom
+  (modus-themes-mode-line '(accented))
+  (modus-themes-hl-line '(accented intense))
+  (modus-themes-bold-constructs t)
+  (modus-themes-italic-constructs t)
+  (modus-themes-completions '((selection . (intense accented))
+			      (popup . (intense accented))))
   :config
   (load-theme 'modus-operandi))
 
