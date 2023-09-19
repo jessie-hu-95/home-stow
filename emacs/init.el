@@ -266,7 +266,7 @@
   :ensure nil
   :bind
   ("H-k" . kill-whole-line)
-  ("H-0" . kill-current-buffer)
+  ("H-q" . kill-current-buffer)
   :config
   (add-hook 'before-save-hook 'delete-trailing-whitespace))
 
@@ -289,7 +289,7 @@
       (display-buffer-reuse-window display-buffer-at-bottom))))
   :bind
   (("H-o" . other-window)
-   ("H-4" . kill-buffer-and-window)
+   ("H-0" . kill-buffer-and-window)
    ("H-n" . scroll-up-line)
    ("H-p" . scroll-down-line)
    ("H-," . switch-to-prev-buffer)

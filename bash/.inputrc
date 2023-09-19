@@ -1,0 +1,28 @@
+# -*- mode: sh -*-
+# ~/.inputrc
+
+# Use emacs editing-mode
+set editing-mode emacs
+
+# Use a visible bell if one is available
+set bell-style visible
+
+# Don't strip characters to 7 bits when reading
+set input-meta on
+
+# Allow iso-latin1 characters to be inserted rather than converted to
+# prefix-meta sequences
+set convert-meta off
+
+# Display characters with the eighth bit set directly rather than as
+# meta-prefixed characters
+set output-meta on
+
+# If there are 150 or more possible completions for a word, ask
+# whether or not the user wants to see all of them
+set completion-query-items 150
+
+# Mimic emacs keybindings in (e)shell-mode.  Note that a leading '\e'
+# represents a prefixed 'ESC', i.e. 'M-'.
+"\ep":  previous-history  # M-p
+"\en":  next-history      # M-n
