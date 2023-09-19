@@ -185,50 +185,18 @@
   (mac-option-modifier 'hyper)
   (mac-right-option-modifier 'meta))
 
-(defun jess/sort-by-alpha-length (elems)
-  (sort elems (lambda (c1 c2)
-                (or (string-version-lessp c1 c2)
-                    (< (length c1) (length c2))))))
-
-(defun jess/sort-by-history (elems)
-  (if-let ((hist (and (not (eq minibuffer-history-variable t))
-                      (symbol-value minibuffer-history-variable))))
-      (minibuffer--sort-by-position hist elems)
-    (jess/sort-by-alpha-length elems)))
-
-(defun jess/completion-category ()
-  "Return completion category."
-  (when-let ((window (active-minibuffer-window)))
-    (with-current-buffer (window-buffer window)
-      (completion-metadata-get
-       (completion-metadata
-	(buffer-substring-no-properties (minibuffer-prompt-end)
-					(max (minibuffer-prompt-end) (point)))
-        minibuffer-completion-table
-        minibuffer-completion-predicate)
-       'category))))
-
-(defun jess/sort-multi-category (elems)
-  "Sort ELEMS per completion category."
-  (pcase (jess/completion-category)
-    ('nil elems) ; no sorting
-    ('kill-ring elems)
-    ('project-file (jess/sort-by-alpha-length elems))
-    (_ (jess/sort-by-history elems))))
-
 (use-package minibuffer
   :ensure nil
+  :after vertico
   :custom
-  (read-extended-command-predicate 'command-completion-default-include-p)
   (enable-recursive-minibuffers t)
   (savehist-mode t)
+  (completions-max-height 10)
   (completion-show-help nil)
   (completions-header-format nil)
-  (completions-max-height 20)
   (completions-format 'one-column)
   (completion-auto-help 'visible)
   (completion-auto-select 'second-tab)
-  (completions-sort 'jess/sort-multi-category)
   :bind
   (:map
    minibuffer-local-map
@@ -240,15 +208,22 @@
    ("C-n" . minibuffer-next-completion)
    ("RET" . minibuffer-choose-completion)))
 
+(use-package vertico
+  :after minibuffer
+  :custom
+  (completions-sort 'vertico-sort-history-length-alpha))
+
 (use-package marginalia
   :custom
   (marginalia-mode t))
 
 (use-package orderless
+  :after minibuffer
   :custom
-  (completion-styles '(orderless basic partial-completion emacs22))
-  (completion-category-defaults nil)
-  (completion-category-overrides '((file (styles partial-completion)))))
+  (completion-styles '(orderless initials flex basic))
+  :config
+  (add-to-list 'completion-category-overrides
+	       '(file (styles partial-completion initials))))
 
 (use-package autorevert
   :ensure nil
@@ -368,7 +343,6 @@
   (corfu-cycle t)
   (corfu-auto t)
   (corfu-auto-prefix 2)
-  (corfu-separator ?\s)
   (corfu-quit-at-boundary nil)
   (corfu-preview-current nil)
   (corfu-preselect 'first)
@@ -390,6 +364,15 @@
   (:map corfu-popupinfo-map
 	("M-n" . corfu-popupinfo-scroll-up)
 	("M-p" . corfu-popupinfo-scroll-down)))
+
+(use-package cape
+  :config
+  (add-to-list 'completion-at-point-functions #'cape-history)
+  (add-to-list 'completion-at-point-functions #'cape-keyword)
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-elisp-symbol)
+  (add-to-list 'completion-at-point-functions #'cape-elisp-block)
+  (add-to-list 'completion-at-point-functions #'cape-tex))
 
 (use-package eat
   :custom
