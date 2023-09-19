@@ -197,6 +197,8 @@
   (completions-format 'one-column)
   (completion-auto-help 'visible)
   (completion-auto-select 'second-tab)
+  (completion-category-overrides
+   '((file (styles basic partial-completion))))
   :bind
   (:map
    minibuffer-local-map
@@ -206,10 +208,7 @@
    completion-in-region-mode-map
    ("C-p" . minibuffer-previous-completion)
    ("C-n" . minibuffer-next-completion)
-   ("RET" . minibuffer-choose-completion))
-  :config
-  (add-to-list 'completion-category-overrides
-	       '(file (styles partial-completion initials))))
+   ("RET" . minibuffer-choose-completion)))
 
 (use-package vertico
   :after minibuffer
@@ -223,7 +222,7 @@
 (use-package orderless
   :after minibuffer
   :custom
-  (completion-styles '(orderless initials flex basic)))
+  (completion-styles '(orderless basic)))
 
 (use-package autorevert
   :ensure nil
@@ -239,6 +238,8 @@
 
 (use-package simple
   :ensure nil
+  :custom
+  (indent-tabs-mode nil)
   :bind
   ("H-k" . kill-whole-line)
   ("H-q" . kill-current-buffer)
