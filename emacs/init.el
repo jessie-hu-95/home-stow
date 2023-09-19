@@ -109,10 +109,12 @@
   (and (display-graphic-p)
        (find-font (font-spec :name "Lucida Grande Mono DK"))
        (find-font (font-spec :name "Lucida Sans OT")))
+  :custom
+  (line-spacing 0.15)
   :custom-face
   (default        ((t (:family "Lucida Grande Mono DK" :height 130))))
   (fixed-pitch    ((t (:family "Lucida Grande Mono DK"))))
-  (variable-pitch ((t (:family "Lucida Sans OT" :height ,(/ 1.0 0.92))))))
+  (variable-pitch ((t (:family "Lucida Sans OT" :height 1.15)))))
 
 (use-package emacs
   :when
@@ -263,8 +265,15 @@
 (use-package simple
   :ensure nil
   :bind
+  ("H-k" . kill-whole-line)
   ("H-0" . kill-current-buffer)
-  ("H-k" . kill-whole-line))
+  :config
+  (add-hook 'before-save-hook 'delete-trailing-whitespace))
+
+(use-package files
+  :ensure nil
+  :bind
+  ("H-g" . find-file))  ;; goto file
 
 (use-package misc
   :ensure nil
@@ -280,6 +289,7 @@
       (display-buffer-reuse-window display-buffer-at-bottom))))
   :bind
   (("H-o" . other-window)
+   ("H-4" . kill-buffer-and-window)
    ("H-n" . scroll-up-line)
    ("H-p" . scroll-down-line)
    ("H-," . switch-to-prev-buffer)
@@ -366,7 +376,10 @@
   (corfu-quit-no-match t)
   (global-corfu-mode t)
   (corfu-auto-delay 0.1)
-  (corfu-popupinfo-delay '(0.5 . 0.2)))
+  (corfu-popupinfo-delay '(0.5 . 0.2))
+  :hook
+  (shell-mode . (lambda () (setq-local corfu-auto nil)))
+  (eshell-mode . (lambda () (setq-local corfu-auto nil))))
 
 (use-package corfu-popupinfo
   :ensure nil
