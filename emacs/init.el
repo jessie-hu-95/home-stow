@@ -206,7 +206,10 @@
    completion-in-region-mode-map
    ("C-p" . minibuffer-previous-completion)
    ("C-n" . minibuffer-next-completion)
-   ("RET" . minibuffer-choose-completion)))
+   ("RET" . minibuffer-choose-completion))
+  :config
+  (add-to-list 'completion-category-overrides
+	       '(file (styles partial-completion initials))))
 
 (use-package vertico
   :after minibuffer
@@ -220,10 +223,7 @@
 (use-package orderless
   :after minibuffer
   :custom
-  (completion-styles '(orderless initials flex basic))
-  :config
-  (add-to-list 'completion-category-overrides
-	       '(file (styles partial-completion initials))))
+  (completion-styles '(orderless initials flex basic)))
 
 (use-package autorevert
   :ensure nil
