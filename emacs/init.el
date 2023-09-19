@@ -191,7 +191,7 @@
   :custom
   (enable-recursive-minibuffers t)
   (savehist-mode t)
-  (completions-max-height 10)
+  (completions-max-height (+ 3 10))
   (completion-show-help nil)
   (completions-header-format nil)
   (completions-format 'one-column)
