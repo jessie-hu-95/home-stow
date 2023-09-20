@@ -89,8 +89,8 @@
   (text-mode        . jess/auto-view-mode)
   (fundamental-mode . jess/auto-view-mode)
   :bind
-  (("H-v" . (lambda () (interactive)
-	      (unless view-mode (view-mode))))))
+  (("H-SPC" . (lambda () (interactive)
+	        (unless view-mode (view-mode))))))
 
 (use-package emacs
   :ensure nil
@@ -244,7 +244,12 @@
 (use-package files
   :ensure nil
   :bind
-  ("H-g" . find-file))  ;; goto file
+  ("H-f" . find-file))
+
+(use-package ibuffer
+  :ensure nil
+  :bind
+  ("H-b" . ibuffer))
 
 (use-package misc
   :ensure nil
@@ -276,14 +281,6 @@
 	("H-r" . windmove-right)
 	("H-u" . windmove-up)
 	("H-d" . windmove-down)))
-
-(use-package emacs
-  :ensure nil
-  :bind
-  ("H-SPC" . forward-whitespace)
-  ("H-f"   . forward-symbol)
-  ("H-b"   . (lambda (arg) (interactive "^p")
-	       (forward-symbol (- arg)))))
 
 (use-package winner
   :ensure nil
