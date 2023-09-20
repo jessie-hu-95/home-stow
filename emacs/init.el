@@ -85,16 +85,12 @@
   (defun jess/auto-view-mode () (interactive)
 	 (when buffer-file-name (view-mode)))
   :hook
-  (prog-mode . jess/auto-view-mode)
-  (text-mode . jess/auto-view-mode)
+  (prog-mode        . jess/auto-view-mode)
+  (text-mode        . jess/auto-view-mode)
+  (fundamental-mode . jess/auto-view-mode)
   :bind
   (("H-v" . (lambda () (interactive)
-	      (unless view-mode (view-mode))))
-   (:map view-mode-map
-	 ("n" . next-line)
-	 ("p" . previous-line)
-	 ("N" . View-search-last-regexp-forward)
-	 ("P" . View-search-last-regexp-backward))))
+	      (unless view-mode (view-mode))))))
 
 (use-package emacs
   :ensure nil

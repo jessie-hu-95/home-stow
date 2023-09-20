@@ -49,7 +49,8 @@
 (use-package eglot
   :ensure nil
   :hook
-  (python-mode . eglot-ensure)
+  ((bash-ts-mode sh-mode) . eglot-ensure)
+  (python-mode            . eglot-ensure)
   :config
   (add-to-list 'eglot-server-programs
 	       `(python-mode . ,jess/python-lsp-server)))
