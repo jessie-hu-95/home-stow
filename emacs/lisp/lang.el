@@ -46,13 +46,10 @@
 
 (defconst jess/python-lsp-server '("pyright-langserver" "--stdio"))
 
-(with-eval-after-load 'eglot
-  (add-to-list 'eglot-server-programs
-	       `(python-mode . ,jess/python-lsp-server)))
-
 (use-package eglot
   :ensure nil
   :hook
   (python-mode . eglot-ensure)
-  :custom
-  (eglot-extend-to-xref t))
+  :config
+  (add-to-list 'eglot-server-programs
+	       `(python-mode . ,jess/python-lsp-server)))

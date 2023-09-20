@@ -187,7 +187,6 @@
 
 (use-package minibuffer
   :ensure nil
-  :after vertico
   :custom
   (enable-recursive-minibuffers t)
   (savehist-mode t)
@@ -195,7 +194,7 @@
   (completion-show-help nil)
   (completions-header-format nil)
   (completions-format 'one-column)
-  (completion-auto-help 'visible)
+  (completion-auto-help 'always)
   (completion-auto-select 'second-tab)
   (completion-category-overrides
    '((file (styles basic partial-completion))))
@@ -387,22 +386,32 @@
   ("C-c e" . eshell)
   ("C-c t" . eat))
 
-(defun jess/disable-global-hl-line-mode ()
-  (setq-local global-hl-line-mode nil))
-
 (use-package hl-line
   :ensure nil
   :hook
-  (shell-mode  . jess/disable-global-hl-line-mode)
-  (eshell-mode . jess/disable-global-hl-line-mode)
-  (eat-mode    . jess/disable-global-hl-line-mode))
+  (shell-mode  . (lambda () (setq-local global-hl-line-mode nil)))
+  (eshell-mode . (lambda () (setq-local global-hl-line-mode nil)))
+  (eat-mode    . (lambda () (setq-local global-hl-line-mode nil))))
 
-(defconst jess/lisp-directory
-  (expand-file-name "lisp" user-emacs-directory))
+(use-package eldoc
+  :ensure nil
+  :custom
+  (eldoc-echo-area-use-multiline-p nil)
+  (eldoc-documentation-strategy 'eldoc-documentation-compose))
+
+(use-package eldoc-box
+  :ensure t
+  :custom
+  (eldoc-box-clear-with-C-g t)
+  :hook
+  (prog-mode . eldoc-box-hover-at-point-mode))
 
 (use-package eglot
   :ensure nil
   :custom
   (eglot-extend-to-xref t))
+
+(defconst jess/lisp-directory
+  (expand-file-name "lisp" user-emacs-directory))
 
 (load (expand-file-name "lang.el" jess/lisp-directory))
