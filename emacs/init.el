@@ -41,8 +41,8 @@
   :bind
   ("C-c r" . recentf-open-files)
   :custom
-  (recentf-max-menu-items 64)
-  (recentf-max-saved-items 256)
+  (recentf-max-menu-items 100)
+  (recentf-max-saved-items 200)
   (recentf-auto-cleanup 'never)
   (recentf-mode t)
   (recentf-exclude `(,(recentf-expand-file-name no-littering-var-directory)
@@ -241,15 +241,17 @@
   :config
   (add-hook 'before-save-hook 'delete-trailing-whitespace))
 
-(use-package files
+(use-package project
   :ensure nil
   :bind
-  ("H-f" . find-file))
-
-(use-package ibuffer
-  :ensure nil
-  :bind
-  ("H-b" . ibuffer))
+  ("H-f" . (lambda () (interactive)
+             (if (project-current nil)
+                 (call-interactively 'project-find-file)
+               (call-interactively 'find-file))))
+  ("H-b" . (lambda () (interactive)
+             (if (project-current nil)
+                 (call-interactively 'project-switch-to-buffer)
+               (call-interactively 'switch-to-buffer)))))
 
 (use-package misc
   :ensure nil
@@ -295,6 +297,15 @@
   (("H-s" . avy-goto-char-timer)
    :map isearch-mode-map
    ("H-s" . avy-isearch)))
+
+(use-package emacs
+  :after (replace xref imenu)
+  :hook
+  (occur-mode-find-occurrence . recenter)
+  (xref-after-jump            . recenter)
+  (imenu-after-jump           . recenter)
+  :custom
+  (isearch-allow-scroll t))
 
 (use-package expand-region
   :bind
