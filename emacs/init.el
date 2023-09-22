@@ -67,8 +67,7 @@
   :config
   ;; Prompt when there are unsaved customizing options
   (add-hook 'kill-emacs-query-functions
-            'custom-prompt-customize-unsaved-options)
-  (load custom-file 'noerror))
+            'custom-prompt-customize-unsaved-options))
 
 (use-package undo-tree
   :ensure t

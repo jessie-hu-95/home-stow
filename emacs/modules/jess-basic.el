@@ -15,9 +15,6 @@
   (inhibit-startup-screen t)
   (inhibit-startup-echo-area-message t)
 
-  ;; Disable menu bar
-  (menu-bar-mode nil)
-
   ;; Disable scroll bar
   (scroll-bar-mode nil)
 
@@ -38,6 +35,14 @@
 
   ;; Maximize frame when startup
   (default-frame-alist '((fullscreen . maximized))))
+
+;; Disable menu bar for none-darwin system.  On macOS, menu bar is
+;; displayed on the global menu bar, and disabling it would result the
+;; fullscreen button not to work correctly.
+(use-package menu-bar
+  :when (not (eq system-type 'darwin))
+  :custom
+  (menu-bar-mode t))
 
 
 ;;; Dired

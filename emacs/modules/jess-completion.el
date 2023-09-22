@@ -64,7 +64,6 @@
 ;;; COmpletion in Region FUnction
 (use-package corfu
   :ensure t
-  :demand t
   :custom
   (corfu-cycle t)
   (corfu-auto t)
