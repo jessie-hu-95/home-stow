@@ -25,6 +25,10 @@
   (tab-bar-new-button-show nil)
   (tab-bar-close-button-show nil)
 
+  ;; Hide the tab bar when it has only one tab, and show it again once
+  ;; more tabs are created
+  (tab-bar-show t)
+
   ;; Enable highlighting of the current line
   (global-hl-line-mode t)
 
