@@ -8,9 +8,9 @@ export LC_CTYPE="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 export TIME_STYLE="long-iso"
 
-function prepend_path () {
+prepend_path () {
     if [ -d "$1" ] ; then
-	export PATH="$1:$PATH"
+	export PATH="${1}:${PATH}"
     fi
 }
 

@@ -25,7 +25,6 @@
   (shell-mode  . (lambda () (setq-local corfu-auto nil)))
   (eshell-mode . (lambda () (setq-local corfu-auto nil)))
 
-  :custom
   ;; Disable `global-hl-line-mode' in each shell/terminal
   (shell-mode  . (lambda () (setq-local global-hl-line-mode nil)))
   (eshell-mode . (lambda () (setq-local global-hl-line-mode nil)))

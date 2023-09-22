@@ -47,10 +47,10 @@
     (pyvenv-auto-run)
     (jess/pyrightconfig-write (jess/pyvenv-auto-venv)))
 
-  (defconst jess/python-server-program '("pyright-langserver" "--stdio"))
-
   :hook
   (python-mode . jess/pyvenv-auto-venv))
+
+(defconst jess/python-server-program '("pyright-langserver" "--stdio"))
 
 
 ;;; Eglot config
@@ -63,7 +63,7 @@
   ((bash-ts-mode sh-mode) . eglot-ensure)
   :config
   (add-to-list 'eglot-server-programs
-	       `(python-mode . ,jess/python-lsp-server)))
+	       `(python-mode . ,jess/python-server-program)))
 
 
 (provide 'jess-lsp)
