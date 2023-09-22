@@ -1,0 +1,19 @@
+#+title: Emacs configuration
+#+author: Jessie
+#+email: jessie.hu.95@icloud.com
+
+* Load modules
+
+#+begin_src emacs-lisp
+  (add-to-list 'load-path (locate-user-emacs-file "modules"))
+  (dolist (module '(jess-basic
+                    jess-completion
+                    jess-doc
+                    jess-font-theme
+                    jess-lsp
+                    jess-modal
+                    jess-modifier
+                    jess-shell
+                    jess-util))
+    (require module))
+#+end_src
