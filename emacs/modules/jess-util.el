@@ -62,6 +62,7 @@
          (if (project-current nil)
              (call-interactively 'project-find-file)
            (call-interactively 'find-file)))
+
   (defun jess/auto-switch-to-buffer () (interactive)
          "Automatically select `switch-to-buffer' or `project-switch-to-buffer'"
          (if (project-current nil)
@@ -71,6 +72,28 @@
   :bind
   ("H-f" . jess/auto-find-file)          ;; analogous to `C-x C-f'
   ("H-b" . jess/auto-switch-to-buffer))  ;; analogous to `C-x b'
+
+
+;;; Magit -- the best git client
+(use-package magit
+  :ensure t
+  :custom
+  ;; Not to add keybindings for `magit-status', `magit-dispatch' and
+  ;; `magit-file-dispatch' to the global keymap
+  (magit-define-global-key-bindings nil)
+  :bind
+  ;; Bind mnemonic key sequences to magit commands
+  ("C-c m d" . magit-dispatch)
+  ("C-c m f" . magit-file-dispatch))
+
+(use-package magit-extras
+  ;; This package should be loaded if we need `magit-project-status'
+  ;; bound in `project-prefix-map'.
+  :demand t
+  :custom
+  ;; Bind `m' to `magit-project-status' in `project-prefix-map', same
+  ;; as default
+  (magit-bind-magit-project-status t))
 
 
 (provide 'jess-util)
