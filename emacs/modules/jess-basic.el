@@ -21,6 +21,10 @@
   ;; Disable tool bar
   (tool-bar-mode nil)
 
+  ;; Not to show buttons on the tab bar
+  (tab-bar-new-button-show nil)
+  (tab-bar-close-button-show nil)
+
   ;; Enable highlighting of the current line
   (global-hl-line-mode t)
 
