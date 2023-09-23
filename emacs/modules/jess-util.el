@@ -26,8 +26,9 @@
 ;;; Window management
 (use-package ace-window
   :ensure t
-  ;; If window indicator keys at the mode line are necessary
-  :demand t
+  ;; We need to add window indicator in the mode line, but we need to
+  ;; do this after other configurations on `mode-line-format'
+  :defer 3
   :bind
   ("H-a" . ace-select-window)
   :custom

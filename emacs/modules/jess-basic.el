@@ -35,6 +35,15 @@
   ;; Enable visual line mode for wrapping long lines
   (global-visual-line-mode t)
 
+  ;; Not to display "percentage offset" of window through buffer in
+  ;; the mode line
+  (mode-line-percent-position nil)
+
+  ;; Enable `column-number-mode' and `line-number-mode' so that
+  ;; line/column numbers are combined in the mode line.
+  (column-number-mode t)
+  (line-number-mode t)
+
   ;; Preserve cursor position when scrolling
   (scroll-preserve-screen-position 'always)
 

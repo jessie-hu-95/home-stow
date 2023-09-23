@@ -96,5 +96,56 @@
 
   (load-theme 'modus-operandi))
 
+;;; Remove lighters for minor modes
+(use-package emacs
+  :config
+  ;; This is a copy of `mode-line-modes' without the minor modes and
+  ;; the surrounding parentheses.  Add the symbol `jess/mode-line-modes'
+  ;; to the `mode-line-format'.
+  (defvar jess/mode-line-modes
+    (let ((recursive-edit-help-echo
+           "Recursive edit, type M-C-c to get out"))
+      (list (propertize "%[" 'help-echo recursive-edit-help-echo)
+	    `(:propertize ("" mode-name)
+			  help-echo "Major mode\n\
+mouse-1: Display major mode menu\n\
+mouse-2: Show help for major mode\n\
+mouse-3: Toggle minor modes"
+			  mouse-face mode-line-highlight
+			  local-map ,mode-line-major-mode-keymap)
+	    '("" mode-line-process)
+	    (propertize "%n" 'help-echo "mouse-2: Remove narrowing from buffer"
+		        'mouse-face 'mode-line-highlight
+		        'local-map (make-mode-line-mouse-map
+				    'mouse-2 #'mode-line-widen))
+	    (propertize "%]" 'help-echo recursive-edit-help-echo)
+	    " "))
+    "Mode line construct for displaying only major modes.")
+
+  ;; Grant permission
+  (put 'jess/mode-line-modes 'risky-local-variable t)
+
+  ;; Copy `mode-line-format' value from its default value and
+  ;; substitute `mode-line-modes' with `jess/mode-line-modes'
+  (setq-default mode-line-format
+                '("%e"
+                  mode-line-front-space
+                  (:propertize (""
+                                mode-line-mule-info
+                                mode-line-client
+                                mode-line-modified
+                                mode-line-remote)
+                               display
+                               (min-width (5.0)))
+                  mode-line-frame-identification
+                  mode-line-buffer-identification
+                  "   "
+                  mode-line-position
+                  (vc-mode vc-mode)
+                  "  "
+                  jess/mode-line-modes
+                  mode-line-misc-info
+                  mode-line-end-spaces)))
+
 
 (provide 'jess-font-theme)
