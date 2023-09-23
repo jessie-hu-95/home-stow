@@ -82,12 +82,13 @@
 
   ;; Control buffer position
   (display-buffer-alist
-   '(;; Disable `*Async Shell Command*' buffer pop up
+   '(;; For `*Completions*' buffer, its behavior is hardcoded in
+     ;; `minibuffer-completion-help'.  It is almost impossible to
+     ;; customize it.
+
+     ;; Disable `*Async Shell Command*' buffer pop up
      ("\\*Async Shell Command\\*"
-      display-buffer-no-window)
-     ;; Force `*Completions*' buffer pop up at the bottom
-     ("\\*Completions\\*"
-      (display-buffer-reuse-window display-buffer-at-bottom))))
+      display-buffer-no-window)))
 
   ;; Record the changes in the window configuration
   (winner-mode t)
