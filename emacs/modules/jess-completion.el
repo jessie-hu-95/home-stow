@@ -1,39 +1,31 @@
 ;;; Completion configurations
 
 
+;;; MCT 1.0.0 (from GitHub)
+(unless (package-installed-p 'vc-use-package)
+  (package-vc-install "https://github.com/slotThe/vc-use-package"))
+
+(use-package mct
+  :vc
+  (:fetcher github :repo protesilaos/mct)
+  :after minibuffer
+  :custom
+  (mct-mode t)
+  (mct-live-completion 'visible))
+
+
 ;;; Minibuffer completion configs
 (use-package minibuffer
   :custom
   ;; Save minibuffer history
   (savehist-mode t)
 
-  ;; Adjust `*Completions*' buffer appearance and behavior
-  (completions-max-height (+ 3 10))
-  (completion-show-help nil)
-  (completions-header-format nil)
-  (completions-format 'one-column)
-  (completion-auto-help 'always)
-  (completion-auto-select 'second-tab)
-
   ;; Allow minibuffer commands while in the minibuffer
   (enable-recursive-minibuffers t)
 
   ;; Config completion styles
   (completion-category-overrides
-   '((file (styles basic partial-completion))))
-
-  :bind
-  ;; Keybindings for `minibuffer-mode' for minibuffer completion
-  (:map minibuffer-local-map
-        ("C-p" . minibuffer-previous-completion)
-        ("C-n" . minibuffer-next-completion))
-
-  ;; Keybindings for `completion-in-region-mode', which is enabled by
-  ;; the original `completion-at-point' command
-  (:map completion-in-region-mode-map
-        ("C-p" . minibuffer-previous-completion)
-        ("C-n" . minibuffer-next-completion)
-        ("RET" . minibuffer-choose-completion)))
+   '((file (styles basic partial-completion)))))
 
 
 ;;; VERTical Interactive COmpletion
