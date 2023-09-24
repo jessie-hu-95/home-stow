@@ -9,9 +9,15 @@
   :vc
   (:fetcher github :repo protesilaos/mct)
   :after minibuffer
+  :config
+  (defun jess/mct-frame-height-fourth ()
+    "Return round number of 1/4 of `frame-height'.
+Can be used in `mct-completion-window-size'."
+    (floor (frame-height) 4))
   :custom
   (mct-mode t)
-  (mct-live-completion 'visible))
+  (mct-live-completion 'visible)
+  (mct-completion-window-size '(jess/mct-frame-height-fourth . 1)))
 
 
 ;;; Minibuffer completion configs
