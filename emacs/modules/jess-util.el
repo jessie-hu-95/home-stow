@@ -182,6 +182,7 @@ the symbol `mode-line-format-right-align' is processed by
   (magit-define-global-key-bindings nil)
   :bind
   ;; Bind mnemonic key sequences to magit commands
+  ("C-c m s" . magit-status)
   ("C-c m d" . magit-dispatch)
   ("C-c m f" . magit-file-dispatch))
 

@@ -100,9 +100,9 @@
 (use-package emacs
   :config
   ;; This is a copy of `mode-line-modes' without the minor modes and
-  ;; the surrounding parentheses.  Add the symbol `jess/mode-line-modes'
-  ;; to the `mode-line-format'.
-  (defvar jess/mode-line-modes
+  ;; the surrounding parentheses.  Add the symbol
+  ;; `jess/mode-line-major-mode' to the `mode-line-format'.
+  (defvar jess/mode-line-major-mode
     (let ((recursive-edit-help-echo
            "Recursive edit, type M-C-c to get out"))
       (list (propertize "%[" 'help-echo recursive-edit-help-echo)
@@ -123,10 +123,10 @@ mouse-3: Toggle minor modes"
     "Mode line construct for displaying only major modes.")
 
   ;; Grant permission
-  (put 'jess/mode-line-modes 'risky-local-variable t)
+  (put 'jess/mode-line-major-mode 'risky-local-variable t)
 
   ;; Copy `mode-line-format' value from its default value and
-  ;; substitute `mode-line-modes' with `jess/mode-line-modes'
+  ;; substitute `mode-line-modes' with `jess/mode-line-major-mode'
   (setq-default mode-line-format
                 '("%e"
                   mode-line-front-space
@@ -143,9 +143,8 @@ mouse-3: Toggle minor modes"
                   mode-line-position
                   (vc-mode vc-mode)
                   "  "
-                  jess/mode-line-modes
-                  mode-line-misc-info
-                  mode-line-end-spaces)))
+                  jess/mode-line-major-mode
+                  mode-line-misc-info)))
 
 
 (provide 'jess-font-theme)
