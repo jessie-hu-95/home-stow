@@ -131,5 +131,6 @@ if [ -f /opt/local/etc/profile.d/bash_completion.sh ]; then
 fi
 
 # Emacs eat integration
-[ -n "$EAT_SHELL_INTEGRATION_DIR" ] && \
-  source "$EAT_SHELL_INTEGRATION_DIR/bash"
+if [ -n "$EAT_SHELL_INTEGRATION_DIR" ]; then
+    source "$EAT_SHELL_INTEGRATION_DIR/bash"
+fi

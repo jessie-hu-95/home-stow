@@ -44,6 +44,9 @@
   (column-number-mode t)
   (line-number-mode t)
 
+  ;; Enable visible bell
+  (visible-bell t)
+
   ;; Preserve cursor position when scrolling
   (scroll-preserve-screen-position 'always)
 
