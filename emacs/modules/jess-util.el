@@ -67,7 +67,10 @@
 
     (defvar jess/mode-line-ace-window
       '(:eval (when ace-window-display-mode
-                (upcase (window-parameter (selected-window) 'ace-window-path))))
+                (let ((indicator
+                       (window-parameter (selected-window) 'ace-window-path)))
+                  (aset indicator 0 (upcase (aref indicator 0)))
+                  indicator)))
       "Indicator for `ace-window'")
 
     ;; Give permission for the variable
