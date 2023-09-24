@@ -75,7 +75,7 @@ ansi_esc_seq () {
     fi
 
     # Remove the first semicolon
-    printf "\e[${str:1}m"
+    printf "\[\e[${str:1}m\]"
 }
 
 # Set the basic prompt for bash
@@ -114,6 +114,8 @@ prompt_command () {
     local symbol="$(aes $bold $italic $blue)λ$(aes $reset) "
 
     PS1="\n\w${cgit}${ccode}\n${symbol}"
+
+    # PS1="\n\w "
 
     unalias aes
 }
