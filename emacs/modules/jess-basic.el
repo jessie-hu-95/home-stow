@@ -67,6 +67,11 @@
 
 ;;; Dired
 (use-package dired
+  :custom
+  ;; Tell dired to guess a default target directory
+  (dired-dwim-target 'dired-dwim-target-recent)
+  ;; Omit hidden files in `dired-omit-mode'
+  (dired-omit-files "^\\..*$")
   :hook
   ;; Hide details when enter dired
   (dired-mode . dired-hide-details-mode)

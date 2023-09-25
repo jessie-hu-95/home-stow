@@ -23,9 +23,14 @@
   (prog-mode . eldoc-box-hover-at-point-mode))
 
 
-;; LaTeX Editing
+;;; LaTeX Editing
 (use-package tex
   :ensure auctex)
+
+
+;;; Markdown Editing
+(use-package markdown-mode
+  :ensure t)
 
 
 (provide 'jess-doc)
