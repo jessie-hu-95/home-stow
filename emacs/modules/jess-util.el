@@ -148,11 +148,12 @@ the symbol `mode-line-format-right-align' is processed by
 
     ;; Set the value of `mode-line-format'
     (setq-default mode-line-format
-                  `(,(jess/remove-ace-window-display-mode)
-                    mode-line-format-right-align
-                    jess/mode-line-ace-window
-                    ;; Add the space at the end, which is same to the front one
-                    mode-line-front-space)))  ;; End of when
+                  (append (jess/remove-ace-window-display-mode)
+                          '(mode-line-format-right-align
+                            jess/mode-line-ace-window
+                            ;; Add the space at the end,
+                            ;; which is same to the front one
+                            mode-line-front-space))))  ;; End of when
   )
 
 
