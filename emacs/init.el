@@ -13,7 +13,8 @@
      ("melpa-stable" . 2)
      ("melpa"        . 1)))
   :config
-  (package-initialize))
+  (unless package--initialized
+    (package-initialize)))
 
 
 ;;; No littering in `user-emacs-directory'
