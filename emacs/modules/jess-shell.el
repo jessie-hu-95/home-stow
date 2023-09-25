@@ -32,11 +32,18 @@
                                         global-hl-line-mode nil
                                         column-number-mode  nil
                                         line-number-mode    nil)))
-
-  ;; Disable `global-hl-line-mode' in each shell/terminal
   (eat-mode    . (lambda () (setq-local global-hl-line-mode nil
                                         column-number-mode  nil
-                                        line-number-mode    nil))))
+                                        line-number-mode    nil)))
+
+  ;; This is for an issue that the ace-window indicator shows no space
+  ;; to the right end of the mode line in *eat* buffer.  The last
+  ;; space complements the offset.
+  (eat-mode . (lambda ()
+                (when ace-window-display-mode
+                  (setq-local mode-line-format
+                              (append (default-value 'mode-line-format)
+                                      '(mode-line-front-space)))))))
 
 
 (provide 'jess-shell)
