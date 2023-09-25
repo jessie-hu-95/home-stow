@@ -2,12 +2,12 @@
 
 
 ;;; MCT 1.0.0 (from GitHub)
+(unless package--initialized
+  (package-initialize))
+(unless (package-installed-p 'vc-use-package)
+  (package-vc-install "https://github.com/slotThe/vc-use-package"))
+
 (use-package mct
-  :init
-  (unless package--initialized
-    (package-initialize))
-  (unless (package-installed-p 'vc-use-package)
-    (package-vc-install "https://github.com/slotThe/vc-use-package"))
   :vc
   (:fetcher github :repo protesilaos/mct)
   :after minibuffer
