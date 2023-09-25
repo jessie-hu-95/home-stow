@@ -10,6 +10,11 @@
 
 ;;; Minimize appearance
 (use-package emacs
+  :config
+  (defun jess/flash-mode-line ()
+    (invert-face 'mode-line)
+    (run-with-timer 0.1 nil #'invert-face 'mode-line))
+
   :custom
   ;; Start up with scratch buffer
   (inhibit-startup-screen t)
@@ -44,8 +49,9 @@
   (column-number-mode t)
   (line-number-mode t)
 
-  ;; Enable visible bell
-  (visible-bell t)
+  ;; Set the visible bell to flash the mode line
+  (visible-bell nil)
+  (ring-bell-function 'jess/flash-mode-line)
 
   ;; Preserve cursor position when scrolling
   (scroll-preserve-screen-position 'always)
