@@ -7,6 +7,10 @@ case "$-" in
     *) return ;;
 esac
 
+# Enable XON/XOFF flow control (that is, ‘Ctrl-S’/‘Ctrl-Q’).  May be
+# negated.
+stty -ixon
+
 # Don't put duplicate lines or lines starting with space in the
 # history.  See bash(1) for more options
 HISTCONTROL=ignoreboth

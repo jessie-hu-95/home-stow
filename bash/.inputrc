@@ -26,3 +26,36 @@ set completion-query-items 150
 # represents a prefixed 'ESC', i.e. 'M-'.
 "\ep":  previous-history  # M-p
 "\en":  next-history      # M-n
+
+# Completion settings
+
+# Words which have more than one possible completion cause the matches
+# to be listed immediately instead of ringing the bell.
+set show-all-if-ambiguous on
+
+# Menu completion displays the common prefix of the list of possible
+# completions (which may be empty) before cycling through the list.
+set menu-complete-display-prefix on
+
+# When listing completions, Readline displays the common prefix of the
+# set of possible completions using a different color.
+set colored-completion-prefix on
+
+# Readline displays possible completions using different colors to
+# indicate their file type.
+set colored-stats on
+
+# Readline performs filename matching and completion in a
+# case-insensitive fashion.
+set completion-ignore-case on
+
+# If COMPLETION-IGNORE-CASE is enabled, Readline treats hyphens ('-')
+# and underscores ('_') as equivalent when performing case-insensitive
+# filename matching and completion.
+set completion-map-case on
+
+# Mimic emacs completion selecting keybindings
+"\C-i": menu-complete           # TAB
+"\e[Z": menu-complete-backward  # S-TAB
+"\C-n": menu-complete           # C-n
+"\C-p": menu-complete-backward  # C-p
