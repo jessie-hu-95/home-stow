@@ -19,6 +19,11 @@
   ("C-c e" . eshell)
   ("C-c t" . eat)
 
+  ;; Enable `S-TAB' for backward complete.  NOTE: this does not work
+  ;; unless eat resolve the issue.
+  (:map eat-semi-char-mode-map
+        ("S-<tab>" . eat-self-input))
+
   :hook
   ;; Disable `corfu-auto' in (e)shell-mode, since `RET' is both used
   ;; by `corfu-insert' and `comint-send-input'.  Disable
@@ -37,8 +42,8 @@
                                         line-number-mode    nil)))
 
   ;; This is for an issue that the ace-window indicator shows no space
-  ;; to the right end of the mode line in *eat* buffer.  The last
-  ;; space complements the offset.
+  ;; (it should have one space) to the right end of the mode line in
+  ;; *eat* buffer.  The additional space complements the offset.
   (eat-mode . (lambda ()
                 (when ace-window-display-mode
                   (setq-local mode-line-format

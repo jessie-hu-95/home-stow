@@ -17,10 +17,12 @@
 (use-package eldoc-box
   :ensure t
   :custom
-  ;; Use `C-g' to kill the childframe
+  ;; Use `C-g' to kill the childframe.  NOTE: this does not work for
+  ;; `eldoc-box-help-at-point' unless the new release fixed this
+  ;; issue.
   (eldoc-box-clear-with-C-g t)
-  :hook
-  (prog-mode . eldoc-box-hover-at-point-mode))
+  :bind
+  ("H-h" . eldoc-box-help-at-point))
 
 
 ;;; LaTeX Editing
