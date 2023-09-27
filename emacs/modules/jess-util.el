@@ -191,6 +191,22 @@ the symbol `mode-line-format-right-align' is processed by
   ("H-b" . jess/auto-switch-to-buffer))  ;; analogous to `C-x b'
 
 
+(use-package hideshow
+  :hook
+  (prog-mode . hs-minor-mode)
+  :bind
+  ("C-c h m" . hs-minor-mode)
+  (:map hs-minor-mode-map
+        ("C-c h h" . hs-hide-block)       ;; alias for `C-c @ C-h'
+        ("C-c h s" . hs-show-block)       ;; alias for `C-c @ C-s'
+        ("C-c h l" . hs-hide-level)       ;; alias for `C-c @ C-l'
+        ("C-c h c" . hs-toggle-hiding)    ;; alias for `C-c @ C-c'
+        ("C-c h a" . hs-show-all)         ;; alias for `C-c @ C-a'
+        ("C-c h t" . hs-hide-all)         ;; alias for `C-c @ C-t'
+        ("C-c h d" . hs-hide-block)       ;; alias for `C-c @ C-d'
+        ("C-c h e" . hs-toggle-hiding)))  ;; alias for `C-c @ C-e'
+
+
 ;;; Magit -- the best git client
 (use-package magit
   :ensure t
