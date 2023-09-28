@@ -90,11 +90,11 @@
   :ensure t
   :bind
   (:map dired-mode-map
-        ("C-c w" . dired-ranger-copy)   ;; Save to copy ring
-        ("C-c y" . dired-ranger-paste)  ;; Paste copy ring contents
-        ("C-c m" . dired-ranger-move)   ;; Move copy ring contents
-        ("C-c b" . dired-ranger-bookmark)
-        ("C-c v" . dired-ranger-bookmark-visit)))
+        ("C-c d w" . dired-ranger-copy)   ;; Save to copy ring
+        ("C-c d y" . dired-ranger-paste)  ;; Paste copy ring contents
+        ("C-c d m" . dired-ranger-move)   ;; Move copy ring contents
+        ("C-c d b" . dired-ranger-bookmark)
+        ("C-c d v" . dired-ranger-bookmark-visit)))
 
 
 ;;; Miscellaneous configs
