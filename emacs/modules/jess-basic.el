@@ -88,11 +88,22 @@
 ;; for multi-stage copy/pasting of files
 (use-package dired-ranger
   :ensure t
+  :after dired
   :bind
   (:map dired-mode-map
-        ("C-c d w" . dired-ranger-copy)   ;; Save to copy ring
-        ("C-c d y" . dired-ranger-paste)  ;; Paste copy ring contents
-        ("C-c d m" . dired-ranger-move)   ;; Move copy ring contents
+        ;; The following three commands do not do stuffs as thier
+        ;; names literally.  `dired-ranger-copy' just saves files to a
+        ;; ring, and one should use `dired-ranger-paste' to copy
+        ;; contents in the ring or `dired-ranger-move' to move
+        ;; contents from the ring.
+
+        ;; analogous to the keybinding `w' for
+        ;; `dired-copy-filename-as-kill'
+        ("C-c d w" . dired-ranger-copy)
+        ;; analogous to the keybinding for `C' for `dired-do-copy'
+        ("C-c d c" . dired-ranger-paste)
+        ;; analogous to the keybinding for `R' for `dired-do-rename'
+        ("C-c d r" . dired-ranger-move)
         ("C-c d b" . dired-ranger-bookmark)
         ("C-c d v" . dired-ranger-bookmark-visit)))
 

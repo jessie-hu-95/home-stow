@@ -216,9 +216,9 @@ the symbol `mode-line-format-right-align' is processed by
   (magit-define-global-key-bindings nil)
   :bind
   ;; Bind mnemonic key sequences to magit commands
-  ("C-c m s" . magit-status)
-  ("C-c m d" . magit-dispatch)
-  ("C-c m f" . magit-file-dispatch))
+  ("C-c v s" . magit-status)
+  ("C-c v d" . magit-dispatch)
+  ("C-c v f" . magit-file-dispatch))
 
 (use-package magit-extras
   ;; This package should be loaded if we need `magit-project-status'
