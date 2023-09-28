@@ -35,4 +35,9 @@
   :ensure t)
 
 
+;;; Denote -- effective note-taking and file-naming tool
+(use-package denote
+  :ensure t)
+
+
 (provide 'jess-doc)

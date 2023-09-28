@@ -85,6 +85,17 @@
   ;; Enable `dired-find-alternate-file' command
   (put 'dired-find-alternate-file 'disabled nil))
 
+;; for multi-stage copy/pasting of files
+(use-package dired-ranger
+  :ensure t
+  :bind
+  (:map dired-mode-map
+        ("C-c w" . dired-ranger-copy)   ;; Save to copy ring
+        ("C-c y" . dired-ranger-paste)  ;; Paste copy ring contents
+        ("C-c m" . dired-ranger-move)   ;; Move copy ring contents
+        ("C-c b" . dired-ranger-bookmark)
+        ("C-c v" . dired-ranger-bookmark-visit)))
+
 
 ;;; Miscellaneous configs
 (use-package emacs
