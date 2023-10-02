@@ -1,5 +1,5 @@
 *.DS_Store
-emacs/README.el
-emacs/elpa
-emacs/etc
-emacs/var
+emacs/.emacs.d/README.el
+emacs/.emacs.d/elpa
+emacs/.emacs.d/etc
+emacs/.emacs.d/var

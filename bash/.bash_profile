@@ -15,11 +15,14 @@ prepend_path () {
 }
 
 # Set environment variables to include macports' stuffs
-if [ -d /opt/local ] ; then
-    prepend_path /opt/local/bin
-    prepend_path /opt/local/libexec/gnubin
-    export MANPATH=/opt/local/share/man
-    export INFOPATH=/opt/local/share/info
+export MP_PREFIX=${HOME}/store/mp
+
+if [ -d $MP_PREFIX ] ; then
+    prepend_path $MP_PREFIX/sbin
+    prepend_path $MP_PREFIX/bin
+    prepend_path $MP_PREFIX/libexec/gnubin
+    export MANPATH=$MP_PREFIX/share/man
+    export INFOPATH=$MP_PREFIX/share/info
 fi
 
 prepend_path $HOME/.local/n/bin
