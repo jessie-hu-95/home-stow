@@ -37,34 +37,8 @@ cmdp () {
     command -v "${@}"
 }
 
-_prepare_git_prompt_sh () {
-    local dload_file=$1
-    local url='https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh'
-    local dload_cmd="curl -o ${dload_file} ${url}"
-
-    if ! [ -e "$dload_file" ]; then
-	if ! [ -x "$(cmdp curl)" ]; then
-	    echo "Command curl is required to download scripts" >&2
-	    return 1
-	fi
-	# Download the git-prompt.sh script
-	echo $dload_cmd
-	eval $dload_cmd
-    fi
-
-    if ! [ -x "$dload_file" ]; then
-	chmod +x "$dload_file"
-    fi
-    return
-}
-
-# Download git-prompt and source it
-_bin_dir=$HOME/.local/bin
-mkdir -p $_bin_dir
-_git_prompt_sh=${_bin_dir}/git-prompt
-chmod +x $_git_prompt_sh
-_prepare_git_prompt_sh $_git_prompt_sh
-. $_git_prompt_sh
+# https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
+. .git-prompt.sh
 
 _git_branch () {
     local branch="$(__git_ps1)"
