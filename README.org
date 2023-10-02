@@ -1,5 +1,5 @@
 * How to stow
 
 #+begin_src shell
-  stow --verbose=2 --target=$HOME --stow emacs bash
+  stow --verbose=2 --target=$HOME --stow */
 #+end_src

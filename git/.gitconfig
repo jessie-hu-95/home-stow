@@ -1,0 +1,16 @@
+[user]
+        name = Jessie Hu
+        email = jessie.hu.95@icloud.com
+[pull]
+        rebase = true
+[fetch]
+        prune = true
+[push]
+        autoSetupRemote = true
+[http]
+        proxy = socks5://localhost:1086
+[https]
+        proxy = socks5://localhost:1086
+
+[includeIf "gitdir:~/store/work"]
+        path = .gitconfig-work
