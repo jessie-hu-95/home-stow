@@ -33,13 +33,17 @@ shopt -s globstar
 # Do not overwrite files when redirecting output by default.
 set -o noclobber
 
-prepare_git_prompt_sh () {
+cmdp () {
+    command -v "${@}"
+}
+
+_prepare_git_prompt_sh () {
     local dload_file=$1
     local url='https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh'
     local dload_cmd="curl -o ${dload_file} ${url}"
 
     if ! [ -e "$dload_file" ]; then
-	if ! [ -x "$(command -v curl)" ]; then
+	if ! [ -x "$(cmdp curl)" ]; then
 	    echo "Command curl is required to download scripts" >&2
 	    return 1
 	fi
@@ -54,11 +58,15 @@ prepare_git_prompt_sh () {
     return
 }
 
-git_prompt_sh="${HOME}/.git-prompt.sh"
-prepare_git_prompt_sh "$git_prompt_sh"
-. "$git_prompt_sh"
+# Download git-prompt and source it
+_bin_dir=$HOME/.local/bin
+mkdir -p $_bin_dir
+_git_prompt_sh=${_bin_dir}/git-prompt
+chmod +x $_git_prompt_sh
+_prepare_git_prompt_sh $_git_prompt_sh
+. $_git_prompt_sh
 
-git_branch () {
+_git_branch () {
     local branch="$(__git_ps1)"
     local ret=$?
     # Remove leading space and parentheses
@@ -66,7 +74,7 @@ git_branch () {
     return $ret
 }
 
-ansi_esc_seq () {
+_ansi_esc_seq () {
     local str=''
 
     for var in "$@"; do
@@ -83,7 +91,7 @@ ansi_esc_seq () {
 }
 
 # Set the basic prompt for bash
-prompt_command () {
+_prompt_command () {
     local code=$?
 
     # ANSI escape codes
@@ -98,9 +106,9 @@ prompt_command () {
     local blue=34
     local magenta=35
 
-    alias aes='ansi_esc_seq'
+    alias aes='_ansi_esc_seq'
 
-    local branch="$(git_branch)"
+    local branch="$(_git_branch)"
     local cgit
     if [ -n "$branch" ]; then
         cgit=" on $(aes $underline $magenta)${branch}$(aes $reset)"
@@ -119,12 +127,10 @@ prompt_command () {
 
     PS1="\n\w${cgit}${ccode}\n${symbol}"
 
-    # PS1="\n\w "
-
     unalias aes
 }
 
-PROMPT_COMMAND=prompt_command
+PROMPT_COMMAND=_prompt_command
 
 # Alias definitions.
 if [ -f ~/.bash_aliases ]; then
@@ -136,7 +142,48 @@ if [ -f /opt/local/etc/profile.d/bash_completion.sh ]; then
     . /opt/local/etc/profile.d/bash_completion.sh
 fi
 
+# The COLORTERM is documented in (info "(emacs) General Variables").
+# The reference to `dumb-emacs-ansi' is in (info "(emacs) Connection
+# Variables").
+if [ "$TERM" = "dumb" ] && [ "$INSIDE_EMACS" ]
+then
+    export PAGER=cat
+    alias less=cat
+    export TERM="dumb-emacs-ansi"
+    export COLORTERM=1
+else
+    export PAGER=less
+fi
+
 # Emacs eat integration
 if [ -n "$EAT_SHELL_INTEGRATION_DIR" ]; then
     source "$EAT_SHELL_INTEGRATION_DIR/bash"
 fi
+
+# Colourise man pages
+man () {
+    env \
+        LESS_TERMCAP_mb=$(tput bold; tput setaf 6) \
+        LESS_TERMCAP_md=$(tput bold; tput setaf 6) \
+        LESS_TERMCAP_me=$(tput sgr0) \
+        LESS_TERMCAP_se=$(tput rmso; tput sgr0) \
+        LESS_TERMCAP_ue=$(tput rmul; tput sgr0) \
+        LESS_TERMCAP_us=$(tput smul; tput bold; tput setaf 4) \
+        LESS_TERMCAP_mr=$(tput rev) \
+        LESS_TERMCAP_mh=$(tput dim) \
+        LESS_TERMCAP_ZN=$(tput ssubm) \
+        LESS_TERMCAP_ZV=$(tput rsubm) \
+        LESS_TERMCAP_ZO=$(tput ssupm) \
+        LESS_TERMCAP_ZW=$(tput rsupm) \
+        man "$@"
+}
+
+# Enter directory and list contents
+cd () {
+    if [ -n "$1" ]
+    then
+        builtin cd "$@" && la
+    else
+        builtin cd ~ && la
+    fi
+}

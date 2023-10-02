@@ -3,12 +3,12 @@
 
 # Wrap the following commands for interactive use to avoid accidental
 # file overwrites.
-rm() { command rm -i "${@}"; }
-cp() { command cp -i "${@}"; }
-mv() { command mv -i "${@}"; }
+rm() { command rm -iv "${@}"; }
+cp() { command cp -iv "${@}"; }
+mv() { command mv -iv "${@}"; }
 
 # Enable color support of ls and also add handy aliases
-if [ -x "$(command -v dircolors)" ]; then
+if [ -x "$(cmdp dircolors)" ]; then
     if [ -r ~/.dircolors ]; then
 	eval "$(dircolors --bourne-shell ~/.dircolors)"
     else
@@ -19,9 +19,10 @@ else
     coloropt=""
 fi
 
-alias ll="ls ${coloropt} --format=verbose --human-readable"
-alias la="ls ${coloropt} --format=verbose --human-readable --almost-all"
-alias ls="ls ${coloropt} --format=single-column"
+alias ll="ls ${coloropt} --group-directories-first --format=verbose --human-readable"
+alias la="ls ${coloropt} --group-directories-first --format=verbose --human-readable --almost-all"
+alias ls="ls ${coloropt} --group-directories-first --format=single-column"
+alias diff="diff ${coloropt}"
 alias dir="dir ${coloropt}"
 alias vdir="vdir ${coloropt}"
 alias grep="grep ${coloropt}"
