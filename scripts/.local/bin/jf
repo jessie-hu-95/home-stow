@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+for f in $@
+do
+    jq -S --indent 4 < $f | sponge $f
+done

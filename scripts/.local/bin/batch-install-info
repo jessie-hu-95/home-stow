@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+for infofile in `find . -type f -regex '.*\.info$'`; do
+    echo "$infofile"
+    install-info --info-file="${infofile}" --info-dir=.
+done

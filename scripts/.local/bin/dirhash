@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+echo $(pwd -P) | sha256sum | cut -f 1 -d ' ' | tr -d '\n'
