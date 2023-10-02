@@ -12,5 +12,5 @@
 [https]
         proxy = socks5://localhost:1086
 
-[includeIf "gitdir:~/store/work"]
+[includeIf "gitdir:~/store/work/"]
         path = .gitconfig-work
