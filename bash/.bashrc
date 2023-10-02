@@ -38,7 +38,7 @@ cmdp () {
 }
 
 # https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
-. .git-prompt.sh
+. ~/.git-prompt.sh
 
 _git_branch () {
     local branch="$(__git_ps1)"
@@ -85,7 +85,7 @@ _prompt_command () {
     local branch="$(_git_branch)"
     local cgit
     if [ -n "$branch" ]; then
-        cgit=" on $(aes $underline $magenta)${branch}$(aes $reset)"
+        cgit=" $(aes $faint)on$(aes $reset) $(aes $underline $magenta)${branch}$(aes $reset)"
     else
         cgit=''
     fi
@@ -97,9 +97,11 @@ _prompt_command () {
         ccode=" $(aes $bold $red)${code}$(aes $reset)"
     fi
 
-    local symbol="$(aes $bold $italic $blue)λ$(aes $reset) "
+    local symbol="$(aes $bold $blue)\$$(aes $reset) "
 
-    PS1="\n\w${cgit}${ccode}\n${symbol}"
+    local path="$(aes $italic)\w$(aes $reset)"
+
+    PS1="\n${path}${cgit}${ccode}\n${symbol}"
 
     unalias aes
 }
