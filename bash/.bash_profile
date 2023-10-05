@@ -21,6 +21,11 @@ prepend PATH     $MP_PREFIX/libexec/gnubin
 prepend MANPATH  $MP_PREFIX/share/man
 prepend INFOPATH $MP_PREFIX/share/info
 
+# Bash-completion provided by macports
+if [ -f $MP_PREFIX/etc/profile.d/bash_completion.sh ]; then
+    . $MP_PREFIX/etc/profile.d/bash_completion.sh
+fi
+
 # PATHs for texlive 2023
 export TL_PREFIX=$HOME/store/tl/2023
 prepend PATH     $TL_PREFIX/bin/universal-darwin

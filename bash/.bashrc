@@ -113,46 +113,10 @@ if [ -f ~/.bash_aliases ]; then
     . ~/.bash_aliases
 fi
 
-# Bash-completion
-if [ -f /opt/local/etc/profile.d/bash_completion.sh ]; then
-    . /opt/local/etc/profile.d/bash_completion.sh
-fi
-
-# The COLORTERM is documented in (info "(emacs) General Variables").
-# The reference to `dumb-emacs-ansi' is in (info "(emacs) Connection
-# Variables").
-if [ "$TERM" = "dumb" ] && [ "$INSIDE_EMACS" ]
-then
-    export PAGER=cat
-    alias less=cat
-    export TERM="dumb-emacs-ansi"
-    export COLORTERM=1
-else
-    export PAGER=less
-fi
-
 # Emacs eat integration
 if [ -n "$EAT_SHELL_INTEGRATION_DIR" ]; then
     source "$EAT_SHELL_INTEGRATION_DIR/bash"
 fi
-
-# Colourise man pages
-man () {
-    env \
-        LESS_TERMCAP_mb=$(tput bold; tput setaf 6) \
-        LESS_TERMCAP_md=$(tput bold; tput setaf 6) \
-        LESS_TERMCAP_me=$(tput sgr0) \
-        LESS_TERMCAP_se=$(tput rmso; tput sgr0) \
-        LESS_TERMCAP_ue=$(tput rmul; tput sgr0) \
-        LESS_TERMCAP_us=$(tput smul; tput bold; tput setaf 4) \
-        LESS_TERMCAP_mr=$(tput rev) \
-        LESS_TERMCAP_mh=$(tput dim) \
-        LESS_TERMCAP_ZN=$(tput ssubm) \
-        LESS_TERMCAP_ZV=$(tput rsubm) \
-        LESS_TERMCAP_ZO=$(tput ssupm) \
-        LESS_TERMCAP_ZW=$(tput rsupm) \
-        man "$@"
-}
 
 # Enter directory and list contents
 cd () {
