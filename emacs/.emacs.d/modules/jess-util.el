@@ -171,26 +171,6 @@ the symbol `mode-line-format-right-align' is processed by
   (ace-window-display-mode . jess/remove-ace-window-display-mode))
 
 
-;;; Automatic project commands
-(use-package project
-  :config
-  (defun jess/auto-find-file () (interactive)
-         "Automatically select `find-file' or `project-find-file'"
-         (if (project-current nil)
-             (call-interactively 'project-find-file)
-           (call-interactively 'find-file)))
-
-  (defun jess/auto-switch-to-buffer () (interactive)
-         "Automatically select `switch-to-buffer' or `project-switch-to-buffer'"
-         (if (project-current nil)
-             (call-interactively 'project-switch-to-buffer)
-           (call-interactively 'switch-to-buffer)))
-
-  :bind
-  ("H-f" . jess/auto-find-file)          ;; analogous to `C-x C-f'
-  ("H-b" . jess/auto-switch-to-buffer))  ;; analogous to `C-x b'
-
-
 (use-package hideshow
   :hook
   (prog-mode . hs-minor-mode)

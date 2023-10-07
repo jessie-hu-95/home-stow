@@ -14,10 +14,37 @@
 ;;; Config shell/terminal modes
 (use-package emacs
   :after (eat corfu)
+  :config
+  (defun jess/shell-other-window ()
+    "Shell in other window."
+    (interactive)
+    (let ((buffer (shell)))
+      (switch-to-buffer (other-buffer buffer))
+      (switch-to-buffer-other-window buffer)))
+
+  (defun jess/eshell-other-window ()
+    "Eshell in other window."
+    (interactive)
+    (let ((buffer (eshell)))
+      (switch-to-buffer (other-buffer buffer))
+      (switch-to-buffer-other-window buffer)))
+
+  (defun jess/eat-other-window ()
+    "Eat in other window."
+    (interactive)
+    (let ((buffer (eat)))
+      (switch-to-buffer (other-buffer buffer))
+      (switch-to-buffer-other-window buffer)))
   :bind
   ("C-c s" . shell)
   ("C-c e" . eshell)
   ("C-c t" . eat)
+
+  ;; Bindings to open shells in other window without shadowing
+  ;; existing keybindings
+  ("C-x 4 s" . jess/shell-other-window)
+  ("C-x 4 e" . jess/eshell-other-window)
+  ("C-x 4 t" . jess/eat-other-window)
 
   ;; Enable `S-TAB' for backward complete.  NOTE: this does not work
   ;; unless eat resolve the issue.

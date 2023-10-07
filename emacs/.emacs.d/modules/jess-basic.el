@@ -163,21 +163,30 @@
   ("H-q" . kill-current-buffer)  ;; analogous to `q' in many built-in modes
 
   ;; Window controlling commands
-  ("H-o" . other-window)            ;; analogous to `C-x o'
-  ("H-0" . kill-buffer-and-window)  ;; analogous to `C-x 0'
-  ("H-n" . scroll-up-line)          ;; analogous to `C-n', move cursor down
-  ("H-p" . scroll-down-line)        ;; analogous to `C-p', move cursor up
+  ("H-0" . kill-buffer-and-window)           ;; analogous to `C-x 0'
+  ("H-1" . delete-other-windows-vertically)  ;; analogous to `C-x 1'
 
-  ;; Mimic behaviors when scrolling mouse horizontally
+  ;; Quick scrolling
+  ("H-u" . (lambda () (interactive) (scroll-up-line 5)))
+  ("H-d" . (lambda () (interactive) (scroll-down-line 5)))
+
+  ;; Mimic behaviors for scrolling mouse horizontally
   ("H-," . switch-to-prev-buffer)  ;; unshifted version of `<'
   ("H-." . switch-to-next-buffer)  ;; unshifted version of `>'
 
-  ;; Move focus around windows
-  (:map windmove-mode-map
-	("H-l" . windmove-left)
-	("H-r" . windmove-right)
-	("H-u" . windmove-up)
-	("H-d" . windmove-down)))
+  ;; Shortcuts
+  ("H-f" . find-file)
+  ("H-b" . switch-to-buffer)
+  ("H-o" . other-window)
+
+  :config
+  ;; Prefix shortcuts
+  (global-set-key (kbd "H-4") (lookup-key global-map (kbd "C-x 4")))
+  (global-set-key (kbd "H-5") (lookup-key global-map (kbd "C-x 5")))
+  (global-set-key (kbd "H-t") (lookup-key global-map (kbd "C-x t")))
+  (global-set-key (kbd "H-p") (lookup-key global-map (kbd "C-x p")))
+  (global-set-key (kbd "H-r") (lookup-key global-map (kbd "C-x r")))
+  (global-set-key (kbd "H-v") (lookup-key global-map (kbd "C-x v"))))
 
 
 (provide 'jess-basic)
