@@ -48,7 +48,7 @@
      pyvenv-auto-venv-dirnames))
 
   (defun jess/pyvenv-auto-setup ()
-    "Activate venv and wright `pyrightconfig.json' file"
+    "Activate venv and write `pyrightconfig.json' file"
     (pyvenv-auto-run)
     (jess/pyrightconfig-write (jess/pyvenv-auto-venv)))
 
