@@ -74,7 +74,20 @@ Can be used in `mct-completion-window-size'."
   (corfu-on-exact-match 'insert)
   (corfu-quit-no-match t)
   (corfu-auto-delay 0.1)
-  (global-corfu-mode t))
+  (global-corfu-mode t)
+
+  :config
+  (defun jess/enable-corfu-in-minibuffer ()
+    "Enable corfu in minibuffer for several commands."
+    (when (memq current-minibuffer-command
+                '(shell-command
+                  async-shell-command
+                  eval-expression))
+      (setq-local corfu-auto nil)
+      (corfu-mode)))
+
+  :hook
+  (minibuffer-setup . jess/enable-corfu-in-minibuffer))
 
 ;; Pop-up documentation
 (use-package corfu-popupinfo
