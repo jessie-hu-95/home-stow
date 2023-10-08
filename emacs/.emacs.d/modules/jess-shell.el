@@ -8,7 +8,12 @@
   ;; Eat terminal emulation in Eshell
   (eat-eshell-mode t)
   ;; Running Eshell visual commands with Eat
-  (eat-eshell-visual-command-mode t))
+  (eat-eshell-visual-command-mode t)
+  :hook
+  ;; Reset `mode-line-buffer-identification' to default
+  (eat-mode . (lambda ()
+                (setq-local mode-line-buffer-identification
+                            (default-value 'mode-line-buffer-identification)))))
 
 
 ;;; Config shell/terminal modes
