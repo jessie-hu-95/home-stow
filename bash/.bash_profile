@@ -37,6 +37,7 @@ prepend PATH $HOME/.local/n/bin
 prepend PATH $HOME/.local/yarn/bin
 prepend PATH $HOME/.local/go/bin
 prepend PATH $HOME/.local/bin
+prepend PATH $HOME/.cargo/bin
 
 # Use clang in PATH as the default C/C++ compiler
 export CC="$(which clang)"
