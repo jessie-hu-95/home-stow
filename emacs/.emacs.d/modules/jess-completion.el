@@ -58,7 +58,11 @@ Can be used in `mct-completion-window-size'."
 (use-package marginalia
   :ensure t
   :custom
-  (marginalia-mode t))
+  (marginalia-mode t)
+  :hook
+  (completion-list-mode . (lambda () (let ((inhibit-message t))
+                                       (visual-line-mode -1)
+                                       (toggle-truncate-lines t)))))
 
 
 ;;; COmpletion in Region FUnction

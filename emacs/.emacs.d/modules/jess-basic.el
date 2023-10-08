@@ -79,8 +79,12 @@
   ;; Omit hidden files in `dired-omit-mode'
   (dired-omit-files "^\\..*$")
   :hook
-  ;; Hide details when enter dired
-  (dired-mode . dired-hide-details-mode)
+  (dired-mode . (lambda () (let ((inhibit-message t))
+                             (dired-hide-details-mode)
+                             (require 'denote)
+                             (denote-dired-mode)
+                             (visual-line-mode -1)
+                             (toggle-truncate-lines t))))
   :config
   ;; Enable `dired-find-alternate-file' command
   (put 'dired-find-alternate-file 'disabled nil))
