@@ -53,8 +53,8 @@
     (jess/pyrightconfig-write (jess/pyvenv-auto-venv)))
 
   :hook
-  (python-mode . jess/pyvenv-auto-setup)
-  (eshell-mode . jess/pyvenv-auto-setup))
+  ;; TODO: setup venv for eshell
+  (python-mode . jess/pyvenv-auto-setup))
 
 (defconst jess/python-server-program '("pyright-langserver" "--stdio"))
 

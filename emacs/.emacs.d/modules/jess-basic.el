@@ -163,12 +163,16 @@
   ("H-q" . kill-current-buffer)  ;; analogous to `q' in many built-in modes
 
   ;; Window controlling commands
-  ("H-0" . kill-buffer-and-window)           ;; analogous to `C-x 0'
-  ("H-1" . delete-other-windows-vertically)  ;; analogous to `C-x 1'
+  ("H-w" . kill-buffer-and-window)
+  ("H-o" . other-window)
+  ("H-0" . delete-window)
+  ("H-1" . delete-other-windows)
+  ("H-2" . split-window-below)
+  ("H-3" . split-window-right)
 
   ;; Quick scrolling
-  ("H-u" . (lambda () (interactive) (scroll-up-line 5)))
-  ("H-d" . (lambda () (interactive) (scroll-down-line 5)))
+  ("H-u" . (lambda () (interactive) (scroll-down-line 5)))
+  ("H-d" . (lambda () (interactive) (scroll-up-line 5)))
 
   ;; Mimic behaviors for scrolling mouse horizontally
   ("H-," . switch-to-prev-buffer)  ;; unshifted version of `<'
@@ -177,7 +181,6 @@
   ;; Shortcuts
   ("H-f" . find-file)
   ("H-b" . switch-to-buffer)
-  ("H-o" . other-window)
 
   :config
   ;; Prefix shortcuts
