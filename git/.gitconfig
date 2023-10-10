@@ -8,9 +8,9 @@
 [push]
         autoSetupRemote = true
 [http]
-        proxy = localhost:1087
+        proxy = http://localhost:1087
 [https]
-        proxy = localhost:1087
+        proxy = http://localhost:1087
 
 [includeIf "gitdir:~/store/work/"]
         path = .gitconfig-work
