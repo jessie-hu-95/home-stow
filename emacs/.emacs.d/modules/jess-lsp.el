@@ -65,8 +65,9 @@
   ;; Activate Eglot in cross-referenced non-project files
   (eglot-extend-to-xref t)
   :hook
-  (python-mode            . eglot-ensure)
-  ((bash-ts-mode sh-mode) . eglot-ensure)
+  ((python-mode python-ts-mode)            . eglot-ensure)
+  ((c-mode c++-mode c-ts-mode c++-ts-mode) . eglot-ensure)
+  ((bash-ts-mode sh-mode)                  . eglot-ensure)
   :config
   (add-to-list 'eglot-server-programs
 	       `(python-mode . ,jess/python-server-program)))
