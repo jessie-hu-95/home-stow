@@ -14,7 +14,7 @@ prepend() {
 }
 
 # PATHs for macports
-export MP_PREFIX=$HOME/store/mp
+export MP_PREFIX=/opt/local
 prepend PATH     $MP_PREFIX/sbin
 prepend PATH     $MP_PREFIX/bin
 prepend PATH     $MP_PREFIX/libexec/gnubin
@@ -43,4 +43,10 @@ prepend PATH $HOME/.cargo/bin
 export CC="$(which clang)"
 export CXX="$(which clang++)"
 
+# The alias file pointed to by HOSTALIASES will be searched for the
+# host name (see gethostbyname(3) for the environment variable and
+# hostname(7) for the file format).
+export HOSTALIASES=~/.hosts
+
+# Honor per-interactive-shell startup file
 if [ -f ~/.bashrc ]; then . ~/.bashrc; fi

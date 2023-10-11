@@ -1,11 +1,26 @@
 # -*- mode: sh -*-
-# ~/.bashrc: executed by bash(1) for non-login shells.
+# ~/.bashrc
 
-# If not running interactively, don't do anything
-case "$-" in
-    *i*) ;;
-    *) return ;;
-esac
+# Bash initialization for interactive non-login shells and for remote
+# shells (info "(bash) Bash Startup Files").
+
+# Export 'SHELL' to child processes.  Programs such as 'screen' honor
+# it and otherwise use /bin/sh.
+export SHELL
+
+if [[ $- != *i* ]]
+then
+    # We are being invoked from a non-interactive shell.  If this is
+    # an SSH session (as in "ssh host command"), source /etc/profile
+    # so we get PATH and other essential variables.
+    [[ -n "$SSH_CLIENT" ]] && source /etc/profile
+
+    # Don't do anything else.
+    return
+fi
+
+# Source the system-wide file.
+source /etc/bashrc
 
 # Enable XON/XOFF flow control (that is, ‘Ctrl-S’/‘Ctrl-Q’).  May be
 # negated.
