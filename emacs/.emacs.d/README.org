@@ -14,6 +14,7 @@
                     jess-modal
                     jess-modifier
                     jess-shell
+                    jess-tramp
                     jess-util))
     (require module))
 #+end_src

@@ -66,6 +66,10 @@
   (save-place-mode t)
 
   :config
+  ;; This is necessary since emacs would not create this directory automatically
+  (let ((lock-file-directory (no-littering-expand-var-file-name "lock/")))
+    (make-directory lock-file-directory 'parents))
+
   ;; Prompt when there are unsaved customizing options
   (add-hook 'kill-emacs-query-functions
             'custom-prompt-customize-unsaved-options))
