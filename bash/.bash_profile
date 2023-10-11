@@ -39,9 +39,9 @@ prepend PATH $HOME/.local/go/bin
 prepend PATH $HOME/.local/bin
 prepend PATH $HOME/.cargo/bin
 
-# Use clang in PATH as the default C/C++ compiler
-export CC="$(which clang)"
-export CXX="$(which clang++)"
+# Use clang provided by macports as the default C/C++ compiler
+export CC=$MP_PREFIX/bin/clang
+export CXX=$MP_PREFIX/bin/clang++
 
 # The alias file pointed to by HOSTALIASES will be searched for the
 # host name (see gethostbyname(3) for the environment variable and
