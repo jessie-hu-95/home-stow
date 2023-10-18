@@ -49,6 +49,7 @@
 
   (defun jess/pyvenv-auto-setup ()
     "Activate venv and write `pyrightconfig.json' file"
+    (interactive)
     (pyvenv-auto-run)
     (jess/pyrightconfig-write (jess/pyvenv-auto-venv)))
 
