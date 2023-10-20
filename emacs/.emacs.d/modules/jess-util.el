@@ -170,7 +170,7 @@ the symbol `mode-line-format-right-align' is processed by
   ;; Remove the default indicator for each toggle of the mode
   (ace-window-display-mode . jess/remove-ace-window-display-mode))
 
-
+;;; Hide and show code blocks
 (use-package hideshow
   :hook
   (prog-mode . hs-minor-mode)
@@ -185,6 +185,21 @@ the symbol `mode-line-format-right-align' is processed by
         ("C-c h t" . hs-hide-all)         ;; alias for `C-c @ C-t'
         ("C-c h d" . hs-hide-block)       ;; alias for `C-c @ C-d'
         ("C-c h e" . hs-toggle-hiding)))  ;; alias for `C-c @ C-e'
+
+
+;;; Commands to save something to kill ring
+(use-package emacs
+  :config
+
+  (defun jess/buffer-file-name-to-kill-ring ()
+    (interactive) (kill-new (buffer-file-name)))
+
+  (defun jess/default-directory-to-kill-ring ()
+    (interactive) (kill-new default-directory))
+
+  :bind
+  ("C-c k f" . jess/buffer-file-name-to-kill-ring)
+  ("C-c k d" . jess/default-directory-to-kill-ring))
 
 
 ;;; Magit -- the best git client
