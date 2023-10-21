@@ -187,19 +187,29 @@ the symbol `mode-line-format-right-align' is processed by
         ("C-c h e" . hs-toggle-hiding)))  ;; alias for `C-c @ C-e'
 
 
-;;; Commands to save something to kill ring
+;;; Commands to add things to kill ring
 (use-package emacs
+  :demand t
   :config
+  (defun jess/buffer-name-kill-new ()
+    (interactive) (kill-new (buffer-name)))
 
-  (defun jess/buffer-file-name-to-kill-ring ()
+  (defun jess/buffer-file-name-kill-new ()
     (interactive) (kill-new (buffer-file-name)))
 
-  (defun jess/default-directory-to-kill-ring ()
+  (defun jess/default-directory-kill-new ()
     (interactive) (kill-new default-directory))
 
+  (defun jess/line-breakpoint-format-kill-new ()
+    (interactive)
+    (kill-new (concat (buffer-file-name) ":"
+                      (int-to-string (line-number-at-pos)))))
+
   :bind
-  ("C-c k f" . jess/buffer-file-name-to-kill-ring)
-  ("C-c k d" . jess/default-directory-to-kill-ring))
+  ("C-c k b" . jess/buffer-name-kill-new)
+  ("C-c k f" . jess/buffer-file-name-kill-new)
+  ("C-c k d" . jess/default-directory-kill-new)
+  ("C-c k l" . jess/line-breakpoint-format-kill-new))
 
 
 ;;; Magit -- the best git client
