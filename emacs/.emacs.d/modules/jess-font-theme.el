@@ -94,7 +94,15 @@
                                 :height ,(expt jess/gr1.5-9th-root 1)
                                 :weight semibold))))
 
-  (load-theme 'modus-operandi))
+  (defun jess/set-cursor-color ()
+    (set-cursor-color (modus-themes-with-colors cyan-refine-fg)))
+
+  (add-hook 'modus-themes-after-load-theme-hook
+            #'jess/set-cursor-color)
+
+  (load-theme 'modus-operandi)
+  (jess/set-cursor-color))
+
 
 ;;; Remove lighters for minor modes
 (use-package emacs
