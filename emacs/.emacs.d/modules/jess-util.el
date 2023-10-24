@@ -4,6 +4,7 @@
 ;;; Increase selected region by semantic units
 (use-package expand-region
   :ensure t
+  :demand t
   :bind
   ("H-e" . er/expand-region)
   ("H-c" . er/contract-region))

@@ -173,6 +173,7 @@
   ("H-1" . delete-other-windows)
   ("H-2" . split-window-below)
   ("H-3" . split-window-right)
+  ("<f8>" . other-window)
 
   ;; Quick scrolling
   ("H-u" . (lambda () (interactive) (scroll-down-line 5)))

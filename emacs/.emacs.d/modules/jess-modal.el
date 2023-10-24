@@ -1,70 +1,92 @@
 ;;; Modal editing
 
-;;; Use `view-mode' as the normal mode for modal editing
-(use-package view
-  :after (mct project)
-  :config
-  (defun jess/auto-view-mode () (interactive)
-         (when (and buffer-file-name
-                    (null view-mode))
-           (view-mode)))
 
-  (defun jess/keyboard-quit () (interactive)
-         (if (and buffer-file-name
-                  (null view-mode)
-                  (null (use-region-p)))
-             (view-mode)
-           (keyboard-quit)))
-
-  (run-with-idle-timer 10 'repeat 'jess/auto-view-mode)
-
-  ;; Redefine the function to let `jess/keyboard-quit' work
-  (defun project--switch-project-command ()
-    (let* ((commands-menu
-            (mapcar
-             (lambda (row)
-               (if (characterp (car row))
-                   ;; Deprecated format.
-                   ;; XXX: Add a warning about it?
-                   (reverse row)
-                 row))
-             project-switch-commands))
-           (commands-map
-            (let ((temp-map (make-sparse-keymap)))
-              (set-keymap-parent temp-map project-prefix-map)
-              (dolist (row commands-menu temp-map)
-                (when-let ((cmd (nth 0 row))
-                           (keychar (nth 2 row)))
-                  (define-key temp-map (vector keychar) cmd)))))
-           command)
-      (while (not command)
-        (let* ((overriding-local-map commands-map)
-               (choice (read-key-sequence (project--keymap-prompt))))
-          (when (setq command (lookup-key commands-map choice))
-            (unless (or project-switch-use-entire-map
-                        (assq command commands-menu))
-              ;; TODO: Add some hint to the prompt, like "key not
-              ;; recognized" or something.
-              (setq command nil)))
-          (let ((global-command (lookup-key (current-global-map) choice)))
-            (when (memq global-command
-                        '(jess/keyboard-quit keyboard-escape-quit))
-              (call-interactively global-command)))))
-      command))
-
+(use-package ryo-modal
+  :vc
+  (:fetcher github :repo Kungsgeten/ryo-modal)
+  :ensure t
+  :after expand-region
   :hook
-  (prog-mode        . jess/auto-view-mode)
-  (text-mode        . jess/auto-view-mode)
-  (fundamental-mode . jess/auto-view-mode)
-
+  (prog-mode . ryo-modal-mode)
   :bind
-  ("C-g" . jess/keyboard-quit)
-  ;; Prevent remapping in MCT
-  (:map mct-minibuffer-completion-list-map
-        ("C-g" . mct-keyboard-quit-dwim))
-  (:map view-mode-map
-        ("u" . (lambda () (interactive) (View-scroll-half-page-backward 5)))
-        ("d" . (lambda () (interactive) (View-scroll-half-page-forward 5)))))
+  ("<f9>" . (lambda () (interactive)
+               (when (null ryo-modal-mode)
+                 (ryo-modal-mode))))
+  :config
+  ;; Commands
+  (defun jess/avy-goto-char-right ()
+    (interactive)
+    (call-interactively 'avy-goto-char)
+    (call-interactively 'forward-char))
+
+  (defun jess/kill-region-or-whole-line ()
+    (interactive)
+    (if (use-region-p)
+        (kill-region (region-beginning) (region-end))
+      (kill-whole-line)))
+
+  (defun jess/insert-or-change ()
+    (interactive)
+    (when (use-region-p)
+      (kill-region (region-beginning) (region-end)))
+    (ryo-modal-mode -1))
+
+  (defun jess/yank ()
+    (interactive)
+    (when (use-region-p)
+      (kill-region (region-beginning) (region-end)))
+    (yank -1))
+
+  (defun jess/backward-white-space ()
+    (interactive)
+    (forward-whitespace -1))
+
+  (defun jess/newline ()
+    (interactive)
+    (ryo-modal-mode -1)
+    (newline))
+
+  (defun jess/back-to-indentation-or-beginning ()
+    (interactive)
+    (if (= (point) (progn (back-to-indentation) (point)))
+        (let ((command (key-binding (kbd "C-a"))))
+          (when command
+            (call-interactively command)))))
+
+  (modus-themes-with-colors
+    (setq ryo-modal-cursor-color magenta-faint))
+
+  (ryo-modal-keys
+   ("a" jess/back-to-indentation-or-beginning)
+   ("b" "C-b")
+   ("c" er/contract-region)
+   ("d" "C-d")
+   ("e" "C-e")
+   ("f" "C-f")
+   ("g" avy-goto-line)
+   ("h" "M-b")
+   ("i" jess/insert-or-change)
+   ("j" "C-j")
+   ("k" jess/kill-region-or-whole-line)
+   ("l" "M-f")
+   ("m" set-mark-command)
+   ("n" "C-n")
+   ("o" jess/avy-goto-char-right)
+   ("p" "C-p")
+   ("q" eldoc-box-help-at-point)
+   ("r" "M-_")
+   ("s" isearch-forward-thing-at-point)
+   ("t" avy-goto-char)
+   ("u" "C-_")
+   ("v" yank-pop)
+   ("w" "M-w")
+   ("x" er/expand-region)
+   ("y" jess/yank)
+   ("z t" zap-up-to-char)
+   ("z o" zap-to-char)
+   ("SPC" forward-whitespace)
+   ("DEL" jess/backward-white-space)
+   ("RET" jess/newline)))
 
 
 (provide 'jess-modal)
