@@ -33,9 +33,10 @@
 
   (defun jess/yank ()
     (interactive)
-    (when (use-region-p)
-      (kill-region (region-beginning) (region-end)))
-    (yank -1))
+    (if (use-region-p)
+        (progn (kill-region (region-beginning) (region-end))
+               (yank -1))
+      (yank)))
 
   (defun jess/backward-white-space ()
     (interactive)
@@ -54,7 +55,7 @@
             (call-interactively command)))))
 
   (modus-themes-with-colors
-    (setq ryo-modal-cursor-color magenta-faint))
+    (setq ryo-modal-cursor-color cyan-faint))
 
   (ryo-modal-keys
    ("a" jess/back-to-indentation-or-beginning)
@@ -86,7 +87,8 @@
    ("z o" zap-to-char)
    ("SPC" forward-whitespace)
    ("DEL" jess/backward-white-space)
-   ("RET" jess/newline)))
+   ("RET" jess/newline)
+   ("TAB" save-buffer)))
 
 
 (provide 'jess-modal)
