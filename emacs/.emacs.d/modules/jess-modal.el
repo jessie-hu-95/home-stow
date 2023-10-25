@@ -25,13 +25,13 @@
         (kill-region (region-beginning) (region-end))
       (kill-whole-line)))
 
-  (defun jess/insert-or-change ()
+  (defun jess/insert-or-kill-insert ()
     (interactive)
     (when (use-region-p)
       (kill-region (region-beginning) (region-end)))
     (ryo-modal-mode -1))
 
-  (defun jess/yank ()
+  (defun jess/yank-or-kill-yank ()
     (interactive)
     (if (use-region-p)
         (progn (kill-region (region-beginning) (region-end))
@@ -40,16 +40,11 @@
 
   (defun jess/scroll-up-lines ()
     (interactive)
-    (scroll-up-line 3))
+    (scroll-up-line 5))
 
   (defun jess/scroll-down-lines ()
     (interactive)
-    (scroll-down-line 3))
-
-  (defun jess/newline ()
-    (interactive)
-    (ryo-modal-mode -1)
-    (newline))
+    (scroll-down-line 5))
 
   (defun jess/back-to-indentation-or-beginning ()
     (interactive)
@@ -70,7 +65,7 @@
    ("f" "C-f")
    ("g" avy-goto-line)
    ("h" "M-b")
-   ("i" jess/insert-or-change)
+   ("i" jess/insert-or-kill-insert)
    ("j" "C-j")
    ("k" jess/kill-region-or-whole-line)
    ("l" "M-f")
@@ -86,14 +81,16 @@
    ("v" yank-pop)
    ("w" "M-w")
    ("x" er/expand-region)
-   ("y" jess/yank)
+   ("y" jess/yank-or-kill-yank)
    ("z t" zap-up-to-char)
    ("z o" zap-to-char)
    ("SPC" jess/scroll-up-lines)
    ("DEL" jess/scroll-down-lines)
    ("RET" save-buffer)
-   ("," "M-<")
-   ("." "M->")))
+   ("," "M-,")
+   ("." "M-.")
+   ("<" "M-<")
+   (">" "M->")))
 
 
 (provide 'jess-modal)
