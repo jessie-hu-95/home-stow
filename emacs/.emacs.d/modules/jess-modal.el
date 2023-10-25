@@ -35,12 +35,16 @@
     (interactive)
     (if (use-region-p)
         (progn (kill-region (region-beginning) (region-end))
-               (yank -1))
+               (yank 2))
       (yank)))
 
-  (defun jess/backward-white-space ()
+  (defun jess/scroll-up-lines ()
     (interactive)
-    (forward-whitespace -1))
+    (scroll-up-line 3))
+
+  (defun jess/scroll-down-lines ()
+    (interactive)
+    (scroll-down-line 3))
 
   (defun jess/newline ()
     (interactive)
@@ -85,10 +89,11 @@
    ("y" jess/yank)
    ("z t" zap-up-to-char)
    ("z o" zap-to-char)
-   ("SPC" forward-whitespace)
-   ("DEL" jess/backward-white-space)
-   ("RET" jess/newline)
-   ("TAB" save-buffer)))
+   ("SPC" jess/scroll-up-lines)
+   ("DEL" jess/scroll-down-lines)
+   ("RET" save-buffer)
+   ("," "M-<")
+   ("." "M->")))
 
 
 (provide 'jess-modal)
