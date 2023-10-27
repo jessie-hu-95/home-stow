@@ -173,15 +173,17 @@
   ("H-1" . delete-other-windows)
   ("H-2" . split-window-below)
   ("H-3" . split-window-right)
-  ("<f8>" . other-window)
+  ("<f7>" . other-window)
 
   ;; Quick scrolling
-  ("H-u" . (lambda () (interactive) (scroll-down-line 5)))
-  ("H-d" . (lambda () (interactive) (scroll-up-line 5)))
+  ("H-u" . (lambda () (interactive) (scroll-down-line 3)))
+  ("H-d" . (lambda () (interactive) (scroll-up-line 3)))
 
   ;; Mimic behaviors for scrolling mouse horizontally
   ("H-," . switch-to-prev-buffer)  ;; unshifted version of `<'
   ("H-." . switch-to-next-buffer)  ;; unshifted version of `>'
+  ("<f5>" . switch-to-prev-buffer)
+  ("<f6>" . switch-to-next-buffer)
 
   ;; Shortcuts
   ("H-f" . find-file)

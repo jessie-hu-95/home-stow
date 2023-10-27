@@ -9,11 +9,19 @@
   :hook
   (prog-mode . ryo-modal-mode)
   :bind
-  ("<f9>" . (lambda () (interactive)
-               (when (null ryo-modal-mode)
-                 (ryo-modal-mode))))
+  ("<f8>" . jess/enable-ryo-modal-mode)
+  ("<f9>" . jess/disable-ryo-modal-mode)
+
   :config
   ;; Commands
+  (defun jess/enable-ryo-modal-mode ()
+    (interactive)
+    (unless ryo-modal-mode (ryo-modal-mode)))
+
+  (defun jess/disable-ryo-modal-mode ()
+    (interactive)
+    (when ryo-modal-mode (ryo-modal-mode -1)))
+
   (defun jess/avy-goto-char-right ()
     (interactive)
     (call-interactively 'avy-goto-char)
@@ -40,11 +48,11 @@
 
   (defun jess/scroll-up-lines ()
     (interactive)
-    (scroll-up-line 5))
+    (scroll-up-line 3))
 
   (defun jess/scroll-down-lines ()
     (interactive)
-    (scroll-down-line 5))
+    (scroll-down-line 3))
 
   (defun jess/back-to-indentation-or-beginning ()
     (interactive)
@@ -53,8 +61,14 @@
           (when command
             (call-interactively command)))))
 
-  (modus-themes-with-colors
-    (setq ryo-modal-cursor-color cyan-faint))
+  (defun jess/set-ryo-modal-cursor-color ()
+    (modus-themes-with-colors
+      (setq ryo-modal-cursor-color magenta-refine-fg)))
+
+  (add-hook 'modus-themes-after-load-theme-hook
+             #'jess/set-ryo-modal-cursor-color)
+
+  (jess/set-ryo-modal-cursor-color)
 
   (ryo-modal-keys
    ("a" jess/back-to-indentation-or-beginning)

@@ -95,7 +95,7 @@
                                 :weight semibold))))
 
   (defun jess/set-cursor-color ()
-    (set-cursor-color (modus-themes-with-colors magenta-refine-fg)))
+    (set-cursor-color (modus-themes-with-colors blue-refine-fg)))
 
   (add-hook 'modus-themes-after-load-theme-hook
             #'jess/set-cursor-color)
